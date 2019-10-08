@@ -1,12 +1,12 @@
-#include "../include/example.hpp"
+#include "../include/nifty.hpp"
 
-example::example(name self, name code, datastream<const char*> ds) : contract(self, code, ds) {}
+nifty::nifty(name self, name code, datastream<const char*> ds) : contract(self, code, ds) {}
 
-example::~example() {}
+nifty::~nifty() {}
 
 //======================== actions ========================
 
-ACTION example::createmsg(name account_name, string message) {
+ACTION nifty::createmsg(name account_name, string message) {
     //authenticate
     require_auth(account_name);
 
@@ -21,7 +21,7 @@ ACTION example::createmsg(name account_name, string message) {
     });
 }
 
-ACTION example::updatemsg(name account_name, string new_message) {
+ACTION nifty::updatemsg(name account_name, string new_message) {
     //open tests table, search for account name
     tests_table tests(get_self(), get_self().value);
     auto& t = tests.get(account_name.value, "account not found");
@@ -35,7 +35,7 @@ ACTION example::updatemsg(name account_name, string new_message) {
     });
 }
 
-ACTION example::deletemsg(name account_name) {
+ACTION nifty::deletemsg(name account_name) {
     //open tests table, search for account name
     tests_table tests(get_self(), get_self().value);
     auto& t = tests.get(account_name.value, "account not found");

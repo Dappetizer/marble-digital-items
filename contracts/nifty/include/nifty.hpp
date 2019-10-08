@@ -1,22 +1,25 @@
-// Example contract that can create, update, and delete user-owned messages.
+// A simple NFT standard for EOSIO software.
 //
-// @author Awesome Developer Person
-// @contract example
-// @version v1.0.0
+// @author Craig Branscom
+// @company Dappetizer, LLC
+// @contract nifty
+// @version v0.0.1
+// @date October 8th, 2019
 
 #include <eosio/eosio.hpp>
 #include <eosio/action.hpp>
+#include <eosio/singleton.hpp>
 
 using namespace std;
 using namespace eosio;
 
-CONTRACT example : public contract {
+CONTRACT nifty : public contract {
 
 public:
 
-    example(name self, name code, datastream<const char*> ds);
+    nifty(name self, name code, datastream<const char*> ds);
 
-    ~example();
+    ~nifty();
 
     //======================== actions ========================
 
