@@ -1,9 +1,9 @@
 #! /bin/bash
 
-# contract
-if [[ "$1" == "example" ]]; then
-    contract=example
-    account=exampleacct1
+#contract
+if [[ "$1" == "nifty" ]]; then
+    contract=nifty
+    account=niftytestnet
 else
     echo "need contract"
     exit 0
@@ -23,7 +23,7 @@ fi
 
 echo ">>> Deploying $contract to $account on $2..."
 
-# eosio v1.8.0
+#eosio v1.8.0
 cleos -u $url set contract $account ./build/$contract/ $contract.wasm $contract.abi -p $account
 
 echo ">>> Deployment Complete"
