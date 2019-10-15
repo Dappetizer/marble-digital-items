@@ -21,4 +21,16 @@ Off-chain content could be anything from raw JSON or Markdown, to dStor/IPFS cid
 
 Every Nifty NFT can optionally have one or more named attributes assigned to it, each with an associated point value. This generic pattern allows developers the freedom to design and interpret attributes specific to their application use case.
 
-Some example attributes are: `level`, `strength`, `experience`, `friends`, `miles`, `bananas`, etc. 
+Some example attributes are: `level`, `strength`, `experience`, `friends`, `miles`, `bananas`, etc.
+
+## Nifty Documentation
+
+| Name | Description |
+| --- | --- |
+| [Starter Guide](docs/StarterGuide.md) | Easy to follow setup, build, and deployment instructions. |
+
+## Contributing to Nifty Standard
+
+Nifty is an open-source token standard where contributions and improvements are welcomed by the community.
+
+To make a contribution, simply fork this repo and submit a PR for your changes. In order to avoid duplication of work, it's best to engage with the community first to determine what would be an acceptable addition to the standard.
