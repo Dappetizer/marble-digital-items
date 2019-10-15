@@ -1,42 +1,24 @@
-# EOSIO Contract Template
-A template repository for EOSIO contracts.
+# Nifty Standard
+A lightweight NFT standard for EOSIO software.
 
-## Setup
+### Features
 
-To begin, navigate to the project directory: `eosio-contract-template/`
+`Simple Contract Interface`
 
-    mkdir build && mkdir build/example
+The Nifty Standard is meant to be straightforward and easy to understand - no complex designs to slow you down. Follow the 6 Steps in the [Nifty Starter Guide](docs/StarterGuide.md) to easily deploy a Nifty NFT.
 
-    chmod +x build.sh
+`Low Resource Consumption`
 
-    chmod +x deploy.sh
+Nifty NFT's are lightweight and take up very few resources, and additional features are designed to be modular and opt-in.
 
-## Build
+`Verifiable Offchain Content`
 
-    ./build.sh contract-name
+Nifty Contracts allow individual NFTs to set links pointing to external content. Optional fields are available for setting content checksums and algorithms, adding to the easy auditability of stored NFT content.
 
-## Deploy
+Off-chain content could be anything from raw JSON or Markdown, to dStor/IPFS cids.
 
-    ./deploy.sh contract-name { mainnet | testnet | local }
+`Generic Attribute System`
 
-# Example Contract
+Every Nifty NFT can optionally have one or more named attributes assigned to it, each with an associated point value. This generic pattern allows developers the freedom to design and interpret attributes specific to their application use case.
 
-An example contract has been provided for reference. It allows an account to create, update, or delete a simple message saved on the blockchain.
-
-### Create Message
-
-Creates the account's message and saves it.
-
-`cleos push action exampleacct1 createmsg '["exampleacct1", "yee haw"]' -p exampleacct1`
-
-### Update Message
-
-Finds the account's message and overwrrites it with the new message.
-
-`cleos push action exampleacct1 updatemsg '["exampleacct1", "howdy partner"]' -p exampleacct1`
-
-### Delete Message
-
-Finds the account's message and deletes it.
-
-`cleos push action exampleacct1 deletemsg '["exampleacct1"]' -p exampleacct1`
+Some example attributes are: `level`, `strength`, `experience`, `friends`, `miles`, `bananas`, etc. 
