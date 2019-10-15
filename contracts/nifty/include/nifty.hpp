@@ -13,12 +13,10 @@
 using namespace std;
 using namespace eosio;
 
-//TODO: add access method (public, private, paid) to config for access to making nfts/sets/attributes
-
 //TODO?: in set table add map<name, uint64_t> default_attributes
 //TODO?: default options for nfts with no set
 //TODO?: add attribute_set to attributes table and add sec index
-//TODO?: make blank set in init() 
+//TODO?: make blank set in init()
 
 CONTRACT nifty : public contract {
 
@@ -30,12 +28,12 @@ CONTRACT nifty : public contract {
 
     //set options: transferable, destructible, updateable, consumable
 
-    //common attributes: level, power, experience, attack, defense, speed
+    //common attributes: level, power, experience, attack, defense, speed, steps, etc...
 
     //======================== admin actions ========================
 
     //initialize the contract
-    ACTION init(string initial_version);
+    ACTION init(string initial_version, name initial_access);
 
     //sets a new nifty version
     ACTION setversion(string new_version);
@@ -43,10 +41,13 @@ CONTRACT nifty : public contract {
     //sets a new admin
     ACTION setadmin(name new_admin, string memo);
 
+    //sets a new access method
+    ACTION setaccess(name new_access, string memo);
+
     //======================== set actions ========================
 
     //creates a new nft set
-    ACTION newset(name set_name, name manager, string title, string description, uint64_t supply_cap);
+    ACTION newset(string title, string description, name set_name, name manager, uint64_t supply_cap);
 
     //adds an nft option
     ACTION addoption(name set_name, name option_name, bool initial_value);
@@ -81,30 +82,35 @@ CONTRACT nifty : public contract {
     //adds a new attribute to an nft
     ACTION addattribute(uint64_t serial, name attribute_name, uint64_t initial_points);
 
+    //sets an attributes points
+    ACTION setpoints(uint64_t serial, name attribute_name, uint64_t new_points);
+
     //increases attribute points by amount
-    ACTION increase(uint64_t serial, name attribute_name, uint64_t points_to_add);
+    ACTION addpoints(uint64_t serial, name attribute_name, uint64_t points_to_add);
 
     //decreases attribute points by amount
-    ACTION decrease(uint64_t serial, name attribute_name, uint64_t points_to_subtract);
+    ACTION subpoints(uint64_t serial, name attribute_name, uint64_t points_to_subtract);
 
     //removes an attribute from an nft
     ACTION rmvattribute(uint64_t serial, name attribute_name);
 
     //======================== contract tables ========================
 
-    //contract config
+    //contract configs
     //scope: singleton
-    TABLE config {
-        string nifty_version;
-        name admin_name;
+    TABLE tokenconfigs {
+        name standard;
+        string version;
+        name admin;
+        name access;
         uint64_t last_serial;
 
-        EOSLIB_SERIALIZE(config, 
-            (nifty_version)(admin_name)(last_serial))
+        EOSLIB_SERIALIZE(tokenconfigs, 
+            (standard)(version)(admin)(access)(last_serial))
     };
-    typedef singleton<name("config"), config> config_singleton;
+    typedef singleton<"tokenconfigs"_n, tokenconfigs> configs_singleton;
 
-    //optional nft set data
+    //nft set data
     //scope: self
     TABLE set {
         name set_name;
@@ -118,12 +124,10 @@ CONTRACT nifty : public contract {
 
         uint64_t primary_key() const { return set_name.value; }
         EOSLIB_SERIALIZE(set, 
-            (set_name)(manager)
-            (title)(description)
-            (supply)(issued_supply)(supply_cap)
-            (options))
+            (set_name)(manager)(title)(description)
+            (supply)(issued_supply)(supply_cap)(options))
     };
-    typedef multi_index<name("sets"), set> sets_table;
+    typedef multi_index<"sets"_n, set> sets_table;
 
     //individual nft data
     //scope: self
@@ -132,8 +136,8 @@ CONTRACT nifty : public contract {
         name set_name;
         name owner;
 
-        string content; //link to nft content
-        string checksum; //optional checksum of content at uri (not needed if uri is an IPFS-based cid)
+        string content; //json, markdown, dStor/IPFS cid
+        string checksum; //checksum of content
         string algorithm; //algorithm used to produce checksum
 
         uint64_t primary_key() const { return serial; }
@@ -143,9 +147,9 @@ CONTRACT nifty : public contract {
             (serial)(set_name)(owner)
             (content)(checksum)(algorithm))
     };
-    typedef multi_index<name("nfts"), nft,
-        indexed_by<name("byset"), const_mem_fun<nft, uint64_t, &nft::by_set>>,
-        indexed_by<name("byowner"), const_mem_fun<nft, uint64_t, &nft::by_owner>>
+    typedef multi_index<"nfts"_n, nft,
+        indexed_by<"byset"_n, const_mem_fun<nft, uint64_t, &nft::by_set>>,
+        indexed_by<"byowner"_n, const_mem_fun<nft, uint64_t, &nft::by_owner>>
     > nfts_table;
 
     //attributes data

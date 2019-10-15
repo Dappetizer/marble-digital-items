@@ -6,74 +6,96 @@ nifty::~nifty() {}
 
 //======================== admin actions ========================
 
-ACTION nifty::init(string initial_version) {
-    
+ACTION nifty::init(string initial_version, name initial_access) {
     //authenticate
     require_auth(get_self());
 
-    config_singleton configs(get_self(), get_self().value);
+    configs_singleton configs(get_self(), get_self().value);
 
     //validate
     check(!configs.exists(), "contract config already initialized");
 
-    config new_conf = {
-        initial_version, //nifty_version
-        get_self(), //admin_name
+    //initialize
+    tokenconfigs new_conf = {
+        "nifty"_n, //standard
+        initial_version, //version
+        get_self(), //admin
+        initial_access, //access
         0 //last_serial
     };
 
+    //set new configs
     configs.set(new_conf, get_self());
-
 }
 
 ACTION nifty::setversion(string new_version) {
-
-    config_singleton configs(get_self(), get_self().value);
+    //open configs singleton, get config
+    configs_singleton configs(get_self(), get_self().value);
     auto conf = configs.get();
 
     //authenticate
-    require_auth(conf.admin_name);
+    require_auth(conf.admin);
 
-    conf.nifty_version = new_version;
+    //set new version
+    conf.version = new_version;
 
+    //update configs singleton
     configs.set(conf, get_self());
 
 }
 
 ACTION nifty::setadmin(name new_admin, string memo) {
-
-    config_singleton configs(get_self(), get_self().value);
+    //open configs singleton, get config
+    configs_singleton configs(get_self(), get_self().value);
     auto conf = configs.get();
 
     //authenticate
-    require_auth(conf.admin_name);
+    require_auth(conf.admin);
 
-    conf.admin_name = new_admin;
+    //set new admin
+    conf.admin = new_admin;
 
+    //update configs singleton
     configs.set(conf, get_self());
+}
 
+ACTION nifty::setaccess(name new_access, string memo) {
+    //open configs singleton, get config
+    configs_singleton configs(get_self(), get_self().value);
+    auto conf = configs.get();
+
+    //authenticate
+    require_auth(conf.admin);
+
+    //set new access
+    conf.access = new_access;
+
+    //update configs singleton
+    configs.set(conf, get_self());
 }
 
 //======================== set actions ========================
 
-ACTION nifty::newset(name set_name, name manager, string title, string description, uint64_t supply_cap) {
-
-    //authenticate
-    require_auth(manager);
-
+ACTION nifty::newset(string title, string description, name set_name, name manager, uint64_t supply_cap) {
+    //open sets table, find set
     sets_table sets(get_self(), get_self().value);
     auto s_itr = sets.find(set_name.value);
+    
+    //authenticate
+    require_auth(manager);
 
     //validate
     check(s_itr == sets.end(), "set name already taken");
     check(supply_cap > 0, "supply cap must be greater than zero");
 
+    //initialize
     map<name, bool> initial_options;
     initial_options["transferable"_n] = false;
     initial_options["destructible"_n] = false;
     initial_options["updateable"_n] = false;
     initial_options["upradeable"_n] = false;
 
+    //emplace new set
     sets.emplace(get_self(), [&](auto& col) {
         col.set_name = set_name;
         col.manager = manager;
@@ -84,55 +106,51 @@ ACTION nifty::newset(name set_name, name manager, string title, string descripti
         col.supply_cap = supply_cap;
         col.options = initial_options;
     });
-
 }
 
 ACTION nifty::addoption(name set_name, name option_name, bool initial_value) {
-
+    //oen sets table, get set
     sets_table sets(get_self(), get_self().value);
     auto& s = sets.get(set_name.value, "set not found");
 
     //authenticate
     require_auth(s.manager);
 
-    auto opt_itr = s.options.find(option_name);
-
     //validate
-    check(opt_itr == s.options.end(), "option already exists");
+    check(s.options.find(option_name) == s.options.end(), "option already exists");
 
+    //initialize
     auto new_options = s.options;
     new_options[option_name] = initial_value;
 
     sets.modify(s, same_payer, [&](auto& col) {
         col.options = new_options;
     });
-
 }
 
 ACTION nifty::toggle(name set_name, name option_name, string memo) {
-
+    //open sets table, get set
     sets_table sets(get_self(), get_self().value);
     auto& s = sets.get(set_name.value, "set not found");
 
     //authenticate
     require_auth(s.manager);
 
-    auto opt_itr = s.options.find(option_name);
-
     //validate
-    check(opt_itr != s.options.end(), "option not found");
+    check(s.options.find(option_name) != s.options.end(), "option not found");
 
+    //initialize
     auto new_options = s.options;
     new_options[option_name] = !new_options.at(option_name);
 
+    //update set options
     sets.modify(s, same_payer, [&](auto& col) {
         col.options = new_options;
     });
-
 }
 
 ACTION nifty::rmvoption(name set_name, name option_name) {
-
+    //open sets table, get set
     sets_table sets(get_self(), get_self().value);
     auto& s = sets.get(set_name.value, "set not found");
 
@@ -144,14 +162,14 @@ ACTION nifty::rmvoption(name set_name, name option_name) {
     //validate
     check(opt_itr != s.options.end(), "option not found");
 
+    //update set options
     sets.modify(s, same_payer, [&](auto& col) {
         col.options.erase(opt_itr);
     });
-
 }
 
 ACTION nifty::setmanager(name set_name, name new_manager, string memo) {
-
+    //open sets table, get set
     sets_table sets(get_self(), get_self().value);
     auto& s = sets.get(set_name.value, "set not found");
 
@@ -161,17 +179,17 @@ ACTION nifty::setmanager(name set_name, name new_manager, string memo) {
     //validate
     check(is_account(new_manager), "new manager account doesn't exist");
 
+    //update set
     sets.modify(s, same_payer, [&](auto& col) {
         col.manager = new_manager;
     });
-
 }
 
 //======================== nft actions ========================
 
 ACTION nifty::newnft(name owner, name set_name, string content, 
     optional<string> checksum, optional<string> algorithm) {
-
+    //open sets table, get set
     sets_table sets(get_self(), get_self().value);
     auto& s = sets.get(set_name.value, "set name not found");
 
@@ -192,7 +210,8 @@ ACTION nifty::newnft(name owner, name set_name, string content,
         initial_algo = *algorithm;
     }
 
-    config_singleton configs(get_self(), get_self().value);
+    //open configs singleton, get configs
+    configs_singleton configs(get_self(), get_self().value);
     auto conf = configs.get();
 
     uint64_t new_serial = conf.last_serial + 1;
@@ -222,7 +241,6 @@ ACTION nifty::newnft(name owner, name set_name, string content,
         col.supply += 1;
         col.issued_supply += 1;
     });
-
 }
 
 ACTION nifty::updatenft(uint64_t serial, string content, 
@@ -337,8 +355,30 @@ ACTION nifty::addattribute(uint64_t serial, name attribute_name, uint64_t initia
 
 }
 
-ACTION nifty::increase(uint64_t serial, name attribute_name, uint64_t points_to_add) {
+ACTION nifty::setpoints(uint64_t serial, name attribute_name, uint64_t new_points) {
+    //open nfts table, get nft
+    nfts_table nfts(get_self(), get_self().value);
+    auto& n = nfts.get(serial, "nft not found");
 
+    sets_table sets(get_self(), get_self().value);
+    auto& s = sets.get(n.set_name.value, "set not found");
+
+    attributes_table attributes(get_self(), serial);
+    auto& a = attributes.get(attribute_name.value, "attribute not found");
+
+    //authenticate
+    require_auth(s.manager);
+
+    //validate
+    check(new_points > 0, "new points greater than zero");
+
+    attributes.modify(a, same_payer, [&](auto& col) {
+        col.points = new_points;
+    });
+}
+
+ACTION nifty::addpoints(uint64_t serial, name attribute_name, uint64_t points_to_add) {
+    //open nfts table, get nft
     nfts_table nfts(get_self(), get_self().value);
     auto& n = nfts.get(serial, "nft not found");
 
@@ -358,10 +398,9 @@ ACTION nifty::increase(uint64_t serial, name attribute_name, uint64_t points_to_
     attributes.modify(a, same_payer, [&](auto& col) {
         col.points += points_to_add;
     });
-
 }
 
-ACTION nifty::decrease(uint64_t serial, name attribute_name, uint64_t points_to_subtract) {
+ACTION nifty::subpoints(uint64_t serial, name attribute_name, uint64_t points_to_subtract) {
 
     nfts_table nfts(get_self(), get_self().value);
     auto& n = nfts.get(serial, "nft not found");
