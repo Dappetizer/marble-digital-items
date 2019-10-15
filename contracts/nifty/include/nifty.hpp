@@ -1,10 +1,10 @@
-// A simple NFT standard for EOSIO software.
+// A lightweight NFT standard for EOSIO software.
 //
 // @author Craig Branscom
 // @company Dappetizer, LLC
 // @contract nifty
-// @version v0.0.1
-// @date October 8th, 2019
+// @version v0.1.0
+// @date October 15th, 2019
 
 #include <eosio/eosio.hpp>
 #include <eosio/action.hpp>
