@@ -1,10 +1,10 @@
-// A lightweight NFT standard for EOSIO software.
+// Marble is a lightweight NFT standard for EOSIO software.
 //
-// @author Craig Branscom
-// @company Dappetizer, LLC
-// @contract nifty
-// @version v0.2.0
-// @date October 15th, 2019
+// author: Craig Branscom
+// company: Dappetizer, LLC
+// contract: marble
+// version: v0.2.0
+// created: October 15th, 2019
 
 #include <eosio/eosio.hpp>
 #include <eosio/action.hpp>
@@ -17,13 +17,13 @@ using namespace eosio;
 //TODO?: make blank set in init()
 //TODO?: make checksum and algorithm fields optional
 
-CONTRACT nifty : public contract {
+CONTRACT marble : public contract {
 
     public:
 
-    nifty(name self, name code, datastream<const char*> ds);
+    marble(name self, name code, datastream<const char*> ds);
 
-    ~nifty();
+    ~marble();
 
     //collection options: transferable, destructible, updateable, increasable, decreasable
 
@@ -34,7 +34,7 @@ CONTRACT nifty : public contract {
     //initialize the contract
     ACTION init(string initial_version, name initial_access);
 
-    //sets a new nifty version
+    //sets a new marble version
     ACTION setversion(string new_version);
 
     //sets a new admin
@@ -99,7 +99,7 @@ CONTRACT nifty : public contract {
     //contract configs
     //scope: singleton
     TABLE tokenconfigs {
-        name standard;
+        name standard; //"marble"_n
         string version;
         name admin;
         name access;

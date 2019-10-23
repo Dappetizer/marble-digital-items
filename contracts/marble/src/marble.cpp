@@ -1,12 +1,12 @@
-#include "../include/nifty.hpp"
+#include "../include/marble.hpp"
 
-nifty::nifty(name self, name code, datastream<const char*> ds) : contract(self, code, ds) {}
+marble::marble(name self, name code, datastream<const char*> ds) : contract(self, code, ds) {}
 
-nifty::~nifty() {}
+marble::~marble() {}
 
 //======================== admin actions ========================
 
-ACTION nifty::init(string initial_version, name initial_access) {
+ACTION marble::init(string initial_version, name initial_access) {
     //authenticate
     require_auth(get_self());
 
@@ -17,7 +17,7 @@ ACTION nifty::init(string initial_version, name initial_access) {
 
     //initialize
     tokenconfigs new_conf = {
-        "nifty"_n, //standard
+        "marble"_n, //standard
         initial_version, //version
         get_self(), //admin
         initial_access, //access
@@ -28,7 +28,7 @@ ACTION nifty::init(string initial_version, name initial_access) {
     configs.set(new_conf, get_self());
 }
 
-ACTION nifty::setversion(string new_version) {
+ACTION marble::setversion(string new_version) {
     //open configs singleton, get config
     configs_singleton configs(get_self(), get_self().value);
     auto conf = configs.get();
@@ -44,7 +44,7 @@ ACTION nifty::setversion(string new_version) {
 
 }
 
-ACTION nifty::setadmin(name new_admin, string memo) {
+ACTION marble::setadmin(name new_admin, string memo) {
     //open configs singleton, get config
     configs_singleton configs(get_self(), get_self().value);
     auto conf = configs.get();
@@ -59,7 +59,7 @@ ACTION nifty::setadmin(name new_admin, string memo) {
     configs.set(conf, get_self());
 }
 
-ACTION nifty::setaccess(name new_access, string memo) {
+ACTION marble::setaccess(name new_access, string memo) {
     //open configs singleton, get config
     configs_singleton configs(get_self(), get_self().value);
     auto conf = configs.get();
@@ -76,7 +76,7 @@ ACTION nifty::setaccess(name new_access, string memo) {
 
 //======================== collection actions ========================
 
-ACTION nifty::newcollectn(string title, string description, name collection_name, name manager, uint64_t supply_cap) {
+ACTION marble::newcollectn(string title, string description, name collection_name, name manager, uint64_t supply_cap) {
     //open collections table, find collection
     collections_table collections(get_self(), get_self().value);
     auto s_itr = collections.find(collection_name.value);
@@ -109,7 +109,7 @@ ACTION nifty::newcollectn(string title, string description, name collection_name
     });
 }
 
-ACTION nifty::addoption(name collection_name, name option_name, bool initial_value) {
+ACTION marble::addoption(name collection_name, name option_name, bool initial_value) {
     //oen collections table, get collection
     collections_table collections(get_self(), get_self().value);
     auto& c = collections.get(collection_name.value, "collection not found");
@@ -129,7 +129,7 @@ ACTION nifty::addoption(name collection_name, name option_name, bool initial_val
     });
 }
 
-ACTION nifty::toggle(name collection_name, name option_name, string memo) {
+ACTION marble::toggle(name collection_name, name option_name, string memo) {
     //open collections table, get collection
     collections_table collections(get_self(), get_self().value);
     auto& c = collections.get(collection_name.value, "collection not found");
@@ -150,7 +150,7 @@ ACTION nifty::toggle(name collection_name, name option_name, string memo) {
     });
 }
 
-ACTION nifty::rmvoption(name collection_name, name option_name) {
+ACTION marble::rmvoption(name collection_name, name option_name) {
     //open collections table, get collection
     collections_table collections(get_self(), get_self().value);
     auto& c = collections.get(collection_name.value, "collection not found");
@@ -169,7 +169,7 @@ ACTION nifty::rmvoption(name collection_name, name option_name) {
     });
 }
 
-ACTION nifty::setmanager(name collection_name, name new_manager, string memo) {
+ACTION marble::setmanager(name collection_name, name new_manager, string memo) {
     //open collections table, get collection
     collections_table collections(get_self(), get_self().value);
     auto& c = collections.get(collection_name.value, "collection not found");
@@ -188,7 +188,7 @@ ACTION nifty::setmanager(name collection_name, name new_manager, string memo) {
 
 //======================== nft actions ========================
 
-ACTION nifty::newnft(name owner, name collection_name, string content, 
+ACTION marble::newnft(name owner, name collection_name, string content, 
     optional<string> checksum, optional<string> algorithm) {
     //open collections table, get collection
     collections_table collections(get_self(), get_self().value);
@@ -244,7 +244,7 @@ ACTION nifty::newnft(name owner, name collection_name, string content,
     });
 }
 
-ACTION nifty::updatenft(uint64_t serial, string content, 
+ACTION marble::updatenft(uint64_t serial, string content, 
     optional<string> checksum, optional<string> algorithm) {
 
     nfts_table nfts(get_self(), get_self().value);
@@ -279,7 +279,7 @@ ACTION nifty::updatenft(uint64_t serial, string content,
 
 }
 
-ACTION nifty::transfernft(uint64_t serial, name new_owner, string memo) {
+ACTION marble::transfernft(uint64_t serial, name new_owner, string memo) {
 
     nfts_table nfts(get_self(), get_self().value);
     auto& n = nfts.get(serial, "nft not found");
@@ -304,7 +304,7 @@ ACTION nifty::transfernft(uint64_t serial, name new_owner, string memo) {
 
 }
 
-ACTION nifty::destroynft(uint64_t serial, string memo) {
+ACTION marble::destroynft(uint64_t serial, string memo) {
 
     nfts_table nfts(get_self(), get_self().value);
     auto& n = nfts.get(serial, "nft not found");
@@ -331,7 +331,7 @@ ACTION nifty::destroynft(uint64_t serial, string memo) {
 
 //======================== attribute actions ========================
 
-ACTION nifty::newattribute(uint64_t serial, name attribute_name, uint64_t initial_points) {
+ACTION marble::newattribute(uint64_t serial, name attribute_name, uint64_t initial_points) {
 
     nfts_table nfts(get_self(), get_self().value);
     auto& n = nfts.get(serial, "nft not found");
@@ -356,7 +356,7 @@ ACTION nifty::newattribute(uint64_t serial, name attribute_name, uint64_t initia
 
 }
 
-ACTION nifty::setpoints(uint64_t serial, name attribute_name, uint64_t new_points) {
+ACTION marble::setpoints(uint64_t serial, name attribute_name, uint64_t new_points) {
     //open nfts table, get nft
     nfts_table nfts(get_self(), get_self().value);
     auto& n = nfts.get(serial, "nft not found");
@@ -378,7 +378,7 @@ ACTION nifty::setpoints(uint64_t serial, name attribute_name, uint64_t new_point
     });
 }
 
-ACTION nifty::increasepts(uint64_t serial, name attribute_name, uint64_t points_to_add) {
+ACTION marble::increasepts(uint64_t serial, name attribute_name, uint64_t points_to_add) {
     //open nfts table, get nft
     nfts_table nfts(get_self(), get_self().value);
     auto& n = nfts.get(serial, "nft not found");
@@ -401,7 +401,7 @@ ACTION nifty::increasepts(uint64_t serial, name attribute_name, uint64_t points_
     });
 }
 
-ACTION nifty::decreasepts(uint64_t serial, name attribute_name, uint64_t points_to_subtract) {
+ACTION marble::decreasepts(uint64_t serial, name attribute_name, uint64_t points_to_subtract) {
 
     nfts_table nfts(get_self(), get_self().value);
     auto& n = nfts.get(serial, "nft not found");
@@ -426,7 +426,7 @@ ACTION nifty::decreasepts(uint64_t serial, name attribute_name, uint64_t points_
 
 }
 
-ACTION nifty::rmvattribute(uint64_t serial, name attribute_name) {
+ACTION marble::rmvattribute(uint64_t serial, name attribute_name) {
 
     nfts_table nfts(get_self(), get_self().value);
     auto& n = nfts.get(serial, "nft not found");

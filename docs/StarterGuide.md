@@ -1,12 +1,12 @@
-# Nifty Starter Guide
+# Marble Starter Guide
 
-Follow the steps below to get started creating a Nifty NFT:
+Follow the steps below to get started creating a Marble NFT:
 
 ## 1. Setup
 
-To begin, navigate to the project directory: `nifty-standard/`
+To begin, navigate to the project directory: `marble-standard/`
 
-    mkdir build && mkdir build/nifty
+    mkdir build && mkdir build/marble
 
     chmod +x build.sh
 
@@ -14,11 +14,11 @@ To begin, navigate to the project directory: `nifty-standard/`
 
 ## 2. Build
 
-    ./build.sh nifty
+    ./build.sh marble
 
 ## 3. Deploy
 
-    ./deploy.sh nifty { mainnet | testnet | local }
+    ./deploy.sh marble { mainnet | testnet | local }
 
 ## 4. Initialize
 

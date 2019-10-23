@@ -1,8 +1,8 @@
 #! /bin/bash
 
 # contract
-if [[ "$1" == "nifty" ]]; then
-    contract=nifty
+if [[ "$1" == "marble" ]]; then
+    contract=marble
 else
     echo "need contract"
     exit 0
