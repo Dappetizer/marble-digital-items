@@ -3,7 +3,7 @@
 #contract
 if [[ "$1" == "nifty" ]]; then
     contract=nifty
-    account=testaccount1
+    account=niftytester1
 else
     echo "need contract"
     exit 0

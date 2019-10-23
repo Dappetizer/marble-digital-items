@@ -23,6 +23,10 @@ Every Nifty NFT can optionally have one or more named attributes assigned to it,
 
 Some example attributes are: `level`, `strength`, `experience`, `friends`, `miles`, `bananas`, etc.
 
+`Custom Collection Management`
+
+Optionally, Nifty NFTs can be created as part of a collection. A collection will define things such as supply cap, transferability, updateability, and other configurable collection-wide options.
+
 ## Nifty Documentation
 
 | Name | Description |

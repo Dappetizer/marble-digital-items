@@ -3,7 +3,7 @@
 // @author Craig Branscom
 // @company Dappetizer, LLC
 // @contract nifty
-// @version v0.1.0
+// @version v0.2.0
 // @date October 15th, 2019
 
 #include <eosio/eosio.hpp>
@@ -13,10 +13,9 @@
 using namespace std;
 using namespace eosio;
 
-//TODO?: in set table add map<name, uint64_t> default_attributes
-//TODO?: default options for nfts with no set
-//TODO?: add attribute_set to attributes table and add sec index
+//TODO?: add map<name, uint64_t> default_attributes
 //TODO?: make blank set in init()
+//TODO?: make checksum and algorithm fields optional
 
 CONTRACT nifty : public contract {
 
@@ -26,7 +25,7 @@ CONTRACT nifty : public contract {
 
     ~nifty();
 
-    //set options: transferable, destructible, updateable, consumable
+    //collection options: transferable, destructible, updateable, increasable, decreasable
 
     //common attributes: level, power, experience, attack, defense, speed, steps, etc...
 
@@ -44,27 +43,28 @@ CONTRACT nifty : public contract {
     //sets a new access method
     ACTION setaccess(name new_access, string memo);
 
-    //======================== set actions ========================
+    //======================== collection actions ========================
 
-    //creates a new nft set
-    ACTION newset(string title, string description, name set_name, name manager, uint64_t supply_cap);
+    //creates a new nft collection
+    ACTION newcollectn(string title, string description, name collection_name, 
+        name manager, uint64_t supply_cap);
 
     //adds an nft option
-    ACTION addoption(name set_name, name option_name, bool initial_value);
+    ACTION addoption(name collection_name, name option_name, bool initial_value);
 
-    //toggles an nft option on/off
-    ACTION toggle(name set_name, name option_name, string memo);
+    //toggles a collection option on/off
+    ACTION toggle(name collection_name, name option_name, string memo);
 
     //removes an nft option
-    ACTION rmvoption(name set_name, name option_name);
+    ACTION rmvoption(name collection_name, name option_name);
 
     //sets a new manager
-    ACTION setmanager(name set_name, name new_manager, string memo);
+    ACTION setmanager(name collection_name, name new_manager, string memo);
 
     //======================== nft actions ========================
 
     //creates a new nft
-    ACTION newnft(name owner, name set_name, string content, 
+    ACTION newnft(name owner, name collection_name, string content, 
         optional<string> checksum, optional<string> algorithm);
 
     //updates nft content, checksum, and algorithm
@@ -80,16 +80,16 @@ CONTRACT nifty : public contract {
     //======================== attribute actions ========================
 
     //adds a new attribute to an nft
-    ACTION addattribute(uint64_t serial, name attribute_name, uint64_t initial_points);
+    ACTION newattribute(uint64_t serial, name attribute_name, uint64_t initial_points);
 
     //sets an attributes points
     ACTION setpoints(uint64_t serial, name attribute_name, uint64_t new_points);
 
     //increases attribute points by amount
-    ACTION addpoints(uint64_t serial, name attribute_name, uint64_t points_to_add);
+    ACTION increasepts(uint64_t serial, name attribute_name, uint64_t points_to_add);
 
     //decreases attribute points by amount
-    ACTION subpoints(uint64_t serial, name attribute_name, uint64_t points_to_subtract);
+    ACTION decreasepts(uint64_t serial, name attribute_name, uint64_t points_to_subtract);
 
     //removes an attribute from an nft
     ACTION rmvattribute(uint64_t serial, name attribute_name);
@@ -110,10 +110,10 @@ CONTRACT nifty : public contract {
     };
     typedef singleton<"tokenconfigs"_n, tokenconfigs> configs_singleton;
 
-    //nft set data
+    //nft collection data
     //scope: self
-    TABLE set {
-        name set_name;
+    TABLE collection {
+        name collection_name;
         name manager;
         string title;
         string description;
@@ -122,18 +122,18 @@ CONTRACT nifty : public contract {
         uint64_t supply_cap;
         map<name, bool> options;
 
-        uint64_t primary_key() const { return set_name.value; }
-        EOSLIB_SERIALIZE(set, 
-            (set_name)(manager)(title)(description)
+        uint64_t primary_key() const { return collection_name.value; }
+        EOSLIB_SERIALIZE(collection, 
+            (collection_name)(manager)(title)(description)
             (supply)(issued_supply)(supply_cap)(options))
     };
-    typedef multi_index<"sets"_n, set> sets_table;
+    typedef multi_index<"collections"_n, collection> collections_table;
 
     //individual nft data
     //scope: self
     TABLE nft {
         uint64_t serial;
-        name set_name;
+        name collection;
         name owner;
 
         string content; //json, markdown, dStor/IPFS cid
@@ -141,14 +141,14 @@ CONTRACT nifty : public contract {
         string algorithm; //algorithm used to produce checksum
 
         uint64_t primary_key() const { return serial; }
-        uint64_t by_set() const { return set_name.value; }
+        uint64_t by_collection() const { return collection.value; }
         uint64_t by_owner() const { return owner.value; }
         EOSLIB_SERIALIZE(nft,
-            (serial)(set_name)(owner)
+            (serial)(collection)(owner)
             (content)(checksum)(algorithm))
     };
     typedef multi_index<"nfts"_n, nft,
-        indexed_by<"byset"_n, const_mem_fun<nft, uint64_t, &nft::by_set>>,
+        indexed_by<"bycollection"_n, const_mem_fun<nft, uint64_t, &nft::by_collection>>,
         indexed_by<"byowner"_n, const_mem_fun<nft, uint64_t, &nft::by_owner>>
     > nfts_table;
 
