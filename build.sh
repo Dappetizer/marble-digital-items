@@ -1,14 +1,14 @@
 #! /bin/bash
 
 # contract
-if [[ "$1" == "nifty" ]]; then
-    contract=nifty
+if [[ "$1" == "marble" ]]; then
+    contract=marble
 else
     echo "need contract"
     exit 0
 fi
 
-echo ">>> Building $contract..."
+echo ">>> Building $contract contract..."
 
 # eosio.cdt v1.6.1
 # -contract=<string>       - Contract name
@@ -19,5 +19,3 @@ echo ">>> Building $contract..."
 # -R=<string>              - Add a resource path for inclusion
 
 eosio-cpp -I="./contracts/$contract/include/" -R="./contracts/$contract/resources" -o="./build/$contract/$contract.wasm" -contract="$contract" -abigen ./contracts/$contract/src/$contract.cpp
-
-echo ">>> Build Complete"

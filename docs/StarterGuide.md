@@ -1,12 +1,12 @@
-# Nifty Starter Guide
+# Marble Starter Guide
 
-Follow the steps below to 
+Follow the steps below to get started creating a Marble NFT:
 
 ## 1. Setup
 
-To begin, navigate to the project directory: `nifty-standard/`
+To begin, navigate to the project directory: `marble-standard/`
 
-    mkdir build && mkdir build/nifty
+    mkdir build && mkdir build/marble
 
     chmod +x build.sh
 
@@ -14,11 +14,11 @@ To begin, navigate to the project directory: `nifty-standard/`
 
 ## 2. Build
 
-    ./build.sh nifty
+    ./build.sh marble
 
 ## 3. Deploy
 
-    ./deploy.sh nifty { mainnet | testnet | local }
+    ./deploy.sh marble { mainnet | testnet | local }
 
 ## 4. Initialize
 
@@ -26,14 +26,14 @@ The first action called on the contract should be the `init()` action. This will
 
 `cleos push action testaccount1 init '[ ... ]' -p testaccount1`
 
-## 5. Create a Set
+## 5. Create a Collection
 
-Sets are collections of NFT's that are all related to each other in some way. NFT's can only belong to a single set at a time, and not all NFT's in a set will have sequential serial numbers.
+Collections are sets of NFT's that are all related to each other in some way. NFT's can only belong to a single collection at a time, and not all NFT's in a collection will have sequential serial numbers.
 
-`cleos push action testaccount1 newset '[ ... ]' -p testaccount1`
+`cleos push action testaccount1 newcollectn '[ ... ]' -p testaccount1`
 
 ## 6. Mint an NFT
 
-Once a set has been created, NFTs can be minted by the set manager.
+Once a collection has been created, NFTs can be minted by the collection manager.
 
 `cleos push action testaccount1 newnft '[ ... ]' -p testaccount1`
