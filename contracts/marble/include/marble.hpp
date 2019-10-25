@@ -48,51 +48,65 @@ CONTRACT marble : public contract {
     //creates a new nft collection
     ACTION newcollectn(string title, string description, name collection_name, 
         name manager, uint64_t supply_cap);
+    using newcollectn_action = action_wrapper<"newcollectn"_n, &marble::newcollectn>;
 
     //adds an nft option
     ACTION addoption(name collection_name, name option_name, bool initial_value);
+    using addoption_action = action_wrapper<"addoption"_n, &marble::addoption>;
 
     //toggles a collection option on/off
     ACTION toggle(name collection_name, name option_name, string memo);
+    using toggle_action = action_wrapper<"toggle"_n, &marble::toggle>;
 
     //removes an nft option
     ACTION rmvoption(name collection_name, name option_name);
+    using rmvoption_action = action_wrapper<"rmvoption"_n, &marble::rmvoption>;
 
     //sets a new manager
     ACTION setmanager(name collection_name, name new_manager, string memo);
+    using setmanager_action = action_wrapper<"setmanager"_n, &marble::setmanager>;
 
     //======================== nft actions ========================
 
     //creates a new nft
     ACTION newnft(name owner, name collection_name, string content, 
         optional<string> checksum, optional<string> algorithm);
+    using newnft_action = action_wrapper<"newnft"_n, &marble::newnft>;
 
     //updates nft content, checksum, and algorithm
     ACTION updatenft(uint64_t serial, string content, 
         optional<string> checksum, optional<string> algorithm);
+    using updatenft_action = action_wrapper<"updatenft"_n, &marble::updatenft>;
 
     //transfers ownership of an nft
     ACTION transfernft(uint64_t serial, name new_owner, string memo);
+    using transfernft_action = action_wrapper<"transfernft"_n, &marble::transfernft>;
 
     //destroys an nft
     ACTION destroynft(uint64_t serial, string memo);
+    using destroynft_action = action_wrapper<"destroynft"_n, &marble::destroynft>;
 
     //======================== attribute actions ========================
 
     //adds a new attribute to an nft
     ACTION newattribute(uint64_t serial, name attribute_name, uint64_t initial_points);
+    using newattribute_action = action_wrapper<"newattribute"_n, &marble::newattribute>;
 
     //sets an attributes points
     ACTION setpoints(uint64_t serial, name attribute_name, uint64_t new_points);
+    using setpoints_action = action_wrapper<"setpoints"_n, &marble::setpoints>;
 
     //increases attribute points by amount
     ACTION increasepts(uint64_t serial, name attribute_name, uint64_t points_to_add);
+    using increasepts_action = action_wrapper<"increasepts"_n, &marble::increasepts>;
 
     //decreases attribute points by amount
     ACTION decreasepts(uint64_t serial, name attribute_name, uint64_t points_to_subtract);
+    using decreasepts_action = action_wrapper<"decreasepts"_n, &marble::decreasepts>;
 
     //removes an attribute from an nft
     ACTION rmvattribute(uint64_t serial, name attribute_name);
+    using rmvattribute_action = action_wrapper<"rmvattribute"_n, &marble::rmvattribute>;
 
     //======================== contract tables ========================
 
