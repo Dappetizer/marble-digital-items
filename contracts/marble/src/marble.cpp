@@ -6,7 +6,8 @@ marble::~marble() {}
 
 //======================== admin actions ========================
 
-ACTION marble::init(string initial_version, name initial_access) {
+ACTION marble::init(string initial_version, name initial_admin) {
+    
     //authenticate
     require_auth(get_self());
 
@@ -14,18 +15,19 @@ ACTION marble::init(string initial_version, name initial_access) {
 
     //validate
     check(!configs.exists(), "contract config already initialized");
+    check(is_account(initial_admin), "initial admin account doesn't exist");
 
     //initialize
     tokenconfigs new_conf = {
         "marble"_n, //standard
         initial_version, //version
-        get_self(), //admin
-        initial_access, //access
+        initial_admin, //admin
         0 //last_serial
     };
 
     //set new configs
     configs.set(new_conf, get_self());
+
 }
 
 ACTION marble::setversion(string new_version) {
@@ -74,7 +76,7 @@ ACTION marble::setaccess(name new_access, string memo) {
     configs.set(conf, get_self());
 }
 
-//======================== collection actions ========================
+//======================== group actions ========================
 
 ACTION marble::newcollectn(string title, string description, name collection_name, name manager, uint64_t supply_cap) {
     //open collections table, find collection
