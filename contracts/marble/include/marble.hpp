@@ -13,7 +13,7 @@ using namespace std;
 using namespace eosio;
 
 //TODO?: add map<name, uint64_t> default_attributes
-//TODO?: make blank set in init()
+//TODO?: make blank group in init()
 //TODO?: make checksum and algorithm fields optional
 //TODO?: vector<name> plugins
 
@@ -32,7 +32,7 @@ CONTRACT marble : public contract {
     //======================== admin actions ========================
 
     //initialize the contract
-    ACTION init(string initial_version, name initial_access);
+    ACTION init(string initial_version, name initial_admin);
 
     //set a new marble version
     ACTION setversion(string new_version);
@@ -85,6 +85,15 @@ CONTRACT marble : public contract {
     //destroys an nft
     ACTION destroynft(uint64_t serial, string memo);
     using destroynft_action = action_wrapper<"destroynft"_n, &marble::destroynft>;
+
+
+
+
+
+
+
+
+
 
     //======================== tag actions ========================
 
@@ -173,6 +182,16 @@ CONTRACT marble : public contract {
         indexed_by<"bygroup"_n, const_mem_fun<nft, uint64_t, &nft::by_group>>,
         indexed_by<"byowner"_n, const_mem_fun<nft, uint64_t, &nft::by_owner>>
     > nfts_table;
+
+
+
+
+
+
+
+
+
+
 
     //tag content
     //scope: serial
