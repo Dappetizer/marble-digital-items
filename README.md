@@ -23,9 +23,9 @@ Every Marble NFT can optionally have one or more named attributes assigned to it
 
 Some example attributes are: `level`, `strength`, `experience`, `friends`, `miles`, `bananas`, etc.
 
-`Custom Collection Management`
+`Custom Group Management`
 
-Optionally, Marble NFTs can be created as part of a collection. A collection will define things such as supply cap, transferability, updateability, and other configurable collection-wide options.
+Optionally, Marble NFTs can be created as part of a group. A group will define things such as supply cap, transferability, destructibility, and other configurable group-wide options.
 
 ## Marble Documentation
 
