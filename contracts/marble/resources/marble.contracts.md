@@ -1,319 +1,219 @@
 <h1 class="contract">init</h1>
-Initialize the Marble contract.
 
-### Parameters
+---
+spec_version: "0.2.0"
+title: Init
+summary: 'Init Contract'
+icon: https://github.com/Telos-Foundation/images/raw/master/ricardian_assets/eosio.contracts/icons/admin.png#9bf1cec664863bd6aaac0f814b235f8799fb02c850e9aa5da34e8a004bd6518e
+---
 
-* **initial_version** (initial version number)
-
-* **initial_access** (initial contract access level)
-
-### Intent
-
-Initialize the Marble contract config with the given initial version and acess level.
-
-### Body
-
-...
+Initialize the contract.
 
 <h1 class="contract">setversion</h1>
-Sets a new version number for the contract.
 
-### Parameters
+---
+spec_version: "0.2.0"
+title: Set Version
+summary: 'Set Contract Version'
+icon: https://github.com/Telos-Foundation/images/raw/master/ricardian_assets/eosio.contracts/icons/admin.png#9bf1cec664863bd6aaac0f814b235f8799fb02c850e9aa5da34e8a004bd6518e
+---
 
-* **new_version** (new version number)
-
-### Intent
-
-Change the current version to the new version.
-
-### Body
-
-...
+Set the contract version to {{new_version}}.
 
 <h1 class="contract">setadmin</h1>
-Sets a new contract admin.
 
-### Parameters
+---
+spec_version: "0.2.0"
+title: Transfer NFT
+summary: 'Transfer NFT'
+icon: https://github.com/Telos-Foundation/images/raw/master/ricardian_assets/eosio.contracts/icons/admin.png#9bf1cec664863bd6aaac0f814b235f8799fb02c850e9aa5da34e8a004bd6518e
+---
 
-* **new_admin** (new admin name)
+Set the contract admin to {{new_admin}}.
 
-### Intent
+<h1 class="contract">logevent</h1>
 
-Change the current admin to the new admin.
+---
+spec_version: "0.2.0"
+title: Log Event
+summary: 'Log Contract Event'
+icon: https://github.com/Telos-Foundation/images/raw/master/ricardian_assets/eosio.contracts/icons/admin.png#9bf1cec664863bd6aaac0f814b235f8799fb02c850e9aa5da34e8a004bd6518e
+---
 
-### Body
+Log a contract event.
 
-...
+<h1 class="contract">newgroup</h1>
 
-<h1 class="contract">setaccess</h1>
-Sets a new contract access level.
+---
+spec_version: "0.2.0"
+title: New Group
+summary: 'New NFT Group'
+icon: https://github.com/Telos-Foundation/images/raw/master/ricardian_assets/eosio.contracts/icons/admin.png#9bf1cec664863bd6aaac0f814b235f8799fb02c850e9aa5da34e8a004bd6518e
+---
 
-### Parameters
+Create the {{group_name}} group.
 
-* **new_access** (new access name)
+<h1 class="contract">addsetting</h1>
 
-### Intent
+---
+spec_version: "0.2.0"
+title: Add Setting
+summary: 'Add Group Setting'
+icon: https://github.com/Telos-Foundation/images/raw/master/ricardian_assets/eosio.contracts/icons/admin.png#9bf1cec664863bd6aaac0f814b235f8799fb02c850e9aa5da34e8a004bd6518e
+---
 
-Change the current access level to the new access.
-
-### Body
-
-...
-
-<h1 class="contract">newcollectn</h1>
-Define a new Collection.
-
-### Parameters
-
-* **title** (collection title)
-
-* **description** (collection description)
-
-* **collection_name** (name of collection)
-
-* **manager** (name of collection manager)
-
-* **supply_cap** (number of nfts allowed in collection)
-
-### Intent
-
-Create a new collection with the given parameters.
-
-### Body
-
-...
-
-<h1 class="contract">addoption</h1>
-Add a new option to a collection.
-
-### Parameters
-
-* **collection_name** (name of the collection to add the option to)
-
-* **option_name** (name of the option to add)
-
-* **initial_value** (the initial value of the option)
-
-### Intent
-
-Add a new option to a collection.
-
-### Body
-
-...
+Add the {{setting_name}} setting to the {{group_name}} group.
 
 <h1 class="contract">toggle</h1>
-Toggle a collection option on or off.
 
-### Parameters
+---
+spec_version: "0.2.0"
+title: Toggle Option
+summary: 'Toggle Group Option'
+icon: https://github.com/Telos-Foundation/images/raw/master/ricardian_assets/eosio.contracts/icons/admin.png#9bf1cec664863bd6aaac0f814b235f8799fb02c850e9aa5da34e8a004bd6518e
+---
 
-* **collection_name** (name of the collection with the option to toggle)
+Toggle the {{option_name}} option on the {{group_name}} group.
 
-* **option_name** (the name of the option to toggle)
+<h1 class="contract">rmvsetting</h1>
 
-* **memo** (a memo describing the toggle)
+---
+spec_version: "0.2.0"
+title: Remove Setting
+summary: 'Remove Group Setting'
+icon: https://github.com/Telos-Foundation/images/raw/master/ricardian_assets/eosio.contracts/icons/admin.png#9bf1cec664863bd6aaac0f814b235f8799fb02c850e9aa5da34e8a004bd6518e
+---
 
-### Intent
-Toggle a collection option on or off.
-
-### Body
-
-...
-
-<h1 class="contract">rmvoption</h1>
-Removes an option from a collection.
-
-### Parameters
-
-* **collection_name** (name of the collection with the option to toggle)
-
-* **option_name** (the name of the option to toggle)
-
-### Intent
-Removes an option form a collection.
-
-### Body
-
-...
+Remove the {{setting_name}} setting from the {{group_name}} group.
 
 <h1 class="contract">setmanager</h1>
-Sets a new collection manager
 
-### Parameters
+---
+spec_version: "0.2.0"
+title: Set Group Manager
+summary: 'Set Group Manager'
+icon: https://github.com/Telos-Foundation/images/raw/master/ricardian_assets/eosio.contracts/icons/admin.png#9bf1cec664863bd6aaac0f814b235f8799fb02c850e9aa5da34e8a004bd6518e
+---
 
-* **collection_name** (name of the collection with the option to toggle)
-
-* **new_manager** (name of the new manager)
-
-* **memo** (a memo describing the change of management)
-
-### Intent
-Sets a new collection manager.
-
-### Body
-
-...
+Change the {{group_name}} group manager to {{new_manager}}.
 
 <h1 class="contract">newnft</h1>
-Creates a new nft.
 
-### Parameters
+---
+spec_version: "0.2.0"
+title: New NFT
+summary: 'New NFT'
+icon: https://github.com/Telos-Foundation/images/raw/master/ricardian_assets/eosio.contracts/icons/admin.png#9bf1cec664863bd6aaac0f814b235f8799fb02c850e9aa5da34e8a004bd6518e
+---
 
-* **owner** (name of the account that will own the nft)
-
-* **collection_name** (the name of the collcetion the nft belongs to)
-
-* **content** (raw content or a link to content)
-
-* **checksum** (checksum of content)
-
-* **algorithm** (algorithm used to produce checksum)
-
-### Intent
-Creates a new nft.
-
-### Body
-
-...
-
-<h1 class="contract">updatenft</h1>
-Updates an NFT's content.
-
-### Parameters
-
-* **serial** (serial number of nft to update)
-
-* **content** (new raw content or link to content)
-
-* **checksum** (checksum of new content)
-
-* **algorithm** (algorithm used to produce new checksum)
-
-### Intent
-Updates an NFT's content.
-
-### Body
-
-...
+Create a new NFT in the {{group_name}} group.
 
 <h1 class="contract">transfernft</h1>
-Transfers ownership of an NFT to a new account.
 
-### Parameters
+---
+spec_version: "0.2.0"
+title: Transfer NFT
+summary: 'Transfer NFT'
+icon: https://github.com/Telos-Foundation/images/raw/master/ricardian_assets/eosio.contracts/icons/admin.png#9bf1cec664863bd6aaac0f814b235f8799fb02c850e9aa5da34e8a004bd6518e
+---
 
-* **serial** (serial number of nft to transfer)
-
-* **new_owner** (name of the new owner account)
-
-* **memo** (memo describing the transfer)
-
-### Intent
-Transfers ownership of an NFT to a new account.
-
-### Body
-
-...
+Transfer NFT Serial #{{serial}} to {{new_owner}}.
 
 <h1 class="contract">destroynft</h1>
-Destroys an NFT and removes it from circulation.
 
-### Parameters
+---
+spec_version: "0.2.0"
+title: Destroy NFT
+summary: 'Destroy NFT'
+icon: https://github.com/Telos-Foundation/images/raw/master/ricardian_assets/eosio.contracts/icons/admin.png#9bf1cec664863bd6aaac0f814b235f8799fb02c850e9aa5da34e8a004bd6518e
+---
 
-* **serial** (serial number of nft to destroy)
+Destroy NFT Serial #{{serial}}.
 
-* **memo** (memo describing the nft destruction)
+<h1 class="contract">newtag</h1>
 
-### Intent
-Destroys an NFT and removes it from circulation.
+---
+spec_version: "0.2.0"
+title: New Tag
+summary: 'Create New Tag'
+icon: https://github.com/Telos-Foundation/images/raw/master/ricardian_assets/eosio.contracts/icons/admin.png#9bf1cec664863bd6aaac0f814b235f8799fb02c850e9aa5da34e8a004bd6518e
+---
 
-### Body
+Create the {{tag_name}} tag for NFT Serial #{{serial}}.
 
-...
+<h1 class="contract">updatetag</h1>
+
+---
+spec_version: "0.2.0"
+title: Update Tag
+summary: 'Update NFT Tag'
+icon: https://github.com/Telos-Foundation/images/raw/master/ricardian_assets/eosio.contracts/icons/admin.png#9bf1cec664863bd6aaac0f814b235f8799fb02c850e9aa5da34e8a004bd6518e
+---
+
+Update {{tag_name}} content for NFT Serial #{{serial}}.
+
+<h1 class="contract">removetag</h1>
+
+---
+spec_version: "0.2.0"
+title: Remove Tag
+summary: 'Remove NFT Tag'
+icon: https://github.com/Telos-Foundation/images/raw/master/ricardian_assets/eosio.contracts/icons/admin.png#9bf1cec664863bd6aaac0f814b235f8799fb02c850e9aa5da34e8a004bd6518e
+---
+
+Remove {{tag_name}} tag from NFT Serial #{{serial}}.
 
 <h1 class="contract">newattribute</h1>
-Assigns an NFT a new attribute.
 
-### Parameters
+---
+spec_version: "0.2.0"
+title: New Attribute
+summary: 'New NFT Attribute'
+icon: https://github.com/Telos-Foundation/images/raw/master/ricardian_assets/eosio.contracts/icons/admin.png#9bf1cec664863bd6aaac0f814b235f8799fb02c850e9aa5da34e8a004bd6518e
+---
 
-* **serial** (serial number of the nft receiving the attribute)
-
-* **attribute_name** (name of the attribute to assign)
-
-* **initial_points** (initial points assigned to attribute)
-
-### Intent
-Assigns an NFT a new attribute.
-
-### Body
-
-...
+Add the {{attribute_name}} attribute to NFT Serial #{{serial}} with {{initial_points}} points.
 
 <h1 class="contract">setpoints</h1>
-Sets the point value of an NFT attribute.
 
-### Parameters
+---
+spec_version: "0.2.0"
+title: Set Points
+summary: 'Set Attribute Points'
+icon: https://github.com/Telos-Foundation/images/raw/master/ricardian_assets/eosio.contracts/icons/admin.png#9bf1cec664863bd6aaac0f814b235f8799fb02c850e9aa5da34e8a004bd6518e
+---
 
-* **serial** (serial number of the nft)
-
-* **attribute_name** (name of the attribute to set points to)
-
-* **new_points** (new point value to set to the attribute)
-
-### Intent
-Sets the point value of an NFT attribute.
-
-### Body
-
-...
+Set {{attribute_name}} attribute to {{new_points}} for NFT Serial #{{serial}}.
 
 <h1 class="contract">increasepts</h1>
-Increases an NFT attribute's points by a given amount.
 
-### Parameters
+---
+spec_version: "0.2.0"
+title: Increase Points
+summary: 'Increase Attribute Points'
+icon: https://github.com/Telos-Foundation/images/raw/master/ricardian_assets/eosio.contracts/icons/admin.png#9bf1cec664863bd6aaac0f814b235f8799fb02c850e9aa5da34e8a004bd6518e
+---
 
-* **serial** (serial number of the nft)
-
-* **attribute_name** (name of the attribute to add points to)
-
-* **points_to_add** (amount of points to add)
-
-### Intent
-Increases an NFT attribute's points by a given amount.
-
-### Body
-
-...
+Increase the {{attribute_name}} attribute by {{points_to_add}} for NFT Serial #{{serial}}.
 
 <h1 class="contract">decreasepts</h1>
-Decreases an NFT attribute's points by a given amount.
 
-### Parameters
+---
+spec_version: "0.2.0"
+title: Decrease Points
+summary: 'Decrease Attribute Points'
+icon: https://github.com/Telos-Foundation/images/raw/master/ricardian_assets/eosio.contracts/icons/admin.png#9bf1cec664863bd6aaac0f814b235f8799fb02c850e9aa5da34e8a004bd6518e
+---
 
-* **serial** (serial number of the nft)
-
-* **attribute_name** (name of the attribute to subtract points from)
-
-* **points_to_subtract** (amount of points to subtract)
-
-### Intent
-Decreases an NFT attribute's points by a given amount.
-
-### Body
-
-...
+Decrease the {{attribute_name}} attribute by {{points_to_subtract}} for NFT Serial #{{serial}}.
 
 <h1 class="contract">rmvattribute</h1>
-Removes an attribute from and NFT.
 
-### Parameters
+---
+spec_version: "0.2.0"
+title: Remove Attribute
+summary: 'Remove Attribute From NFT'
+icon: https://github.com/Telos-Foundation/images/raw/master/ricardian_assets/eosio.contracts/icons/admin.png#9bf1cec664863bd6aaac0f814b235f8799fb02c850e9aa5da34e8a004bd6518e
+---
 
-* **serial** (serial number of the nft)
-
-* **attribute_name** (name of the attribute to remove)
-
-### Intent
-Removes an attribute from and NFT.
-
-### Body
-
-...
+Remove the {{attribute_name}} attribute from NFT Serial #{{serial}}.

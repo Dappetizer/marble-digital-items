@@ -6,7 +6,8 @@ marble::~marble() {}
 
 //======================== admin actions ========================
 
-ACTION marble::init(string initial_version, name initial_access) {
+ACTION marble::init(string initial_version, name initial_admin) {
+    
     //authenticate
     require_auth(get_self());
 
@@ -14,21 +15,25 @@ ACTION marble::init(string initial_version, name initial_access) {
 
     //validate
     check(!configs.exists(), "contract config already initialized");
+    check(is_account(initial_admin), "initial admin account doesn't exist");
 
     //initialize
     tokenconfigs new_conf = {
         "marble"_n, //standard
         initial_version, //version
-        get_self(), //admin
-        initial_access, //access
+        initial_admin, //admin
         0 //last_serial
     };
 
     //set new configs
     configs.set(new_conf, get_self());
+
+    //TODO: inline to newgroup()
+
 }
 
 ACTION marble::setversion(string new_version) {
+    
     //open configs singleton, get config
     configs_singleton configs(get_self(), get_self().value);
     auto conf = configs.get();
@@ -45,6 +50,7 @@ ACTION marble::setversion(string new_version) {
 }
 
 ACTION marble::setadmin(name new_admin, string memo) {
+    
     //open configs singleton, get config
     configs_singleton configs(get_self(), get_self().value);
     auto conf = configs.get();
@@ -57,159 +63,162 @@ ACTION marble::setadmin(name new_admin, string memo) {
 
     //update configs singleton
     configs.set(conf, get_self());
+
 }
 
-ACTION marble::setaccess(name new_access, string memo) {
-    //open configs singleton, get config
-    configs_singleton configs(get_self(), get_self().value);
-    auto conf = configs.get();
+//======================== utility actions ========================
+
+ACTION marble::logevent(name event_name, uint64_t event_value, time_point_sec event_time, string memo) {
 
     //authenticate
-    require_auth(conf.admin);
+    require_auth(get_self());
 
-    //set new access
-    conf.access = new_access;
-
-    //update configs singleton
-    configs.set(conf, get_self());
 }
 
-//======================== collection actions ========================
+//======================== group actions ========================
 
-ACTION marble::newcollectn(string title, string description, name collection_name, name manager, uint64_t supply_cap) {
-    //open collections table, find collection
-    collections_table collections(get_self(), get_self().value);
-    auto s_itr = collections.find(collection_name.value);
+ACTION marble::newgroup(string title, string description, name group_name, name manager, uint64_t supply_cap) {
+    
+    //open groups table, search for group
+    groups_table groups(get_self(), get_self().value);
+    auto g_itr = groups.find(group_name.value);
     
     //authenticate
     require_auth(manager);
 
     //validate
-    check(s_itr == collections.end(), "collection name already taken");
+    check(g_itr == groups.end(), "group name already taken");
     check(supply_cap > 0, "supply cap must be greater than zero");
 
     //initialize
-    map<name, bool> initial_options;
-    initial_options["transferable"_n] = false;
-    initial_options["destructible"_n] = false;
-    initial_options["updateable"_n] = false;
-    initial_options["increasable"_n] = false;
-    initial_options["decreasable"_n] = false;
+    map<name, bool> initial_settings;
 
-    //emplace new collection
-    collections.emplace(get_self(), [&](auto& col) {
-        col.collection_name = collection_name;
+    //core settings
+    initial_settings["mintable"_n] = true;
+    initial_settings["transferable"_n] = false;
+    initial_settings["destructible"_n] = false;
+
+    //tag settings
+    // initial_settings["taggable"_n] = false;
+    initial_settings["updateable"_n] = false;
+
+    //attribute settings
+    // initial_settings["attributable"_n] = false;
+    initial_settings["increasable"_n] = false;
+    initial_settings["decreasable"_n] = false;
+
+    //emplace new group
+    groups.emplace(get_self(), [&](auto& col) {
+        col.group_name = group_name;
         col.manager = manager;
         col.title = title;
         col.description = description;
         col.supply = 0;
         col.issued_supply = 0;
         col.supply_cap = supply_cap;
-        col.options = initial_options;
+        col.settings = initial_settings;
     });
+
 }
 
-ACTION marble::addoption(name collection_name, name option_name, bool initial_value) {
-    //oen collections table, get collection
-    collections_table collections(get_self(), get_self().value);
-    auto& c = collections.get(collection_name.value, "collection not found");
+ACTION marble::addsetting(name group_name, name setting_name, bool initial_value) {
+    
+    //open groups table, get group
+    groups_table groups(get_self(), get_self().value);
+    auto& g = groups.get(group_name.value, "group not found");
 
     //authenticate
-    require_auth(c.manager);
+    require_auth(g.manager);
 
     //validate
-    check(c.options.find(option_name) == c.options.end(), "option already exists");
+    check(g.settings.find(setting_name) == g.settings.end(), "setting already exists");
 
     //initialize
-    auto new_options = c.options;
-    new_options[option_name] = initial_value;
+    auto new_settings = g.settings;
+    new_settings[setting_name] = initial_value;
 
-    collections.modify(c, same_payer, [&](auto& col) {
-        col.options = new_options;
+    groups.modify(g, same_payer, [&](auto& col) {
+        col.settings = new_settings;
     });
+
 }
 
-ACTION marble::toggle(name collection_name, name option_name, string memo) {
-    //open collections table, get collection
-    collections_table collections(get_self(), get_self().value);
-    auto& c = collections.get(collection_name.value, "collection not found");
+ACTION marble::toggle(name group_name, name setting_name, string memo) {
+    
+    //open groups table, get group
+    groups_table groups(get_self(), get_self().value);
+    auto& g = groups.get(group_name.value, "group not found");
 
     //authenticate
-    require_auth(c.manager);
+    require_auth(g.manager);
 
     //validate
-    check(c.options.find(option_name) != c.options.end(), "option not found");
+    check(g.settings.find(setting_name) != g.settings.end(), "setting not found");
 
     //initialize
-    auto new_options = c.options;
-    new_options[option_name] = !new_options.at(option_name);
+    auto new_settings = g.settings;
+    new_settings[setting_name] = !new_settings.at(setting_name);
 
-    //update collection options
-    collections.modify(c, same_payer, [&](auto& col) {
-        col.options = new_options;
+    //update group options
+    groups.modify(g, same_payer, [&](auto& col) {
+        col.settings = new_settings;
     });
+
 }
 
-ACTION marble::rmvoption(name collection_name, name option_name) {
-    //open collections table, get collection
-    collections_table collections(get_self(), get_self().value);
-    auto& c = collections.get(collection_name.value, "collection not found");
+ACTION marble::rmvsetting(name group_name, name setting_name) {
+    
+    //open groups table, get group
+    groups_table groups(get_self(), get_self().value);
+    auto& g = groups.get(setting_name.value, "group not found");
 
     //authenticate
-    require_auth(c.manager);
+    require_auth(g.manager);
 
-    auto opt_itr = c.options.find(option_name);
+    auto s_itr = g.settings.find(setting_name);
 
     //validate
-    check(opt_itr != c.options.end(), "option not found");
+    check(s_itr != g.settings.end(), "setting not found");
 
-    //update collection options
-    collections.modify(c, same_payer, [&](auto& col) {
-        col.options.erase(opt_itr);
+    //update group options
+    groups.modify(g, same_payer, [&](auto& col) {
+        col.settings.erase(s_itr);
     });
+
 }
 
-ACTION marble::setmanager(name collection_name, name new_manager, string memo) {
-    //open collections table, get collection
-    collections_table collections(get_self(), get_self().value);
-    auto& c = collections.get(collection_name.value, "collection not found");
+ACTION marble::setmanager(name group_name, name new_manager, string memo) {
+    
+    //open groups table, get group
+    groups_table groups(get_self(), get_self().value);
+    auto& g = groups.get(group_name.value, "group not found");
 
     //authenticate
-    require_auth(c.manager);
+    require_auth(g.manager);
 
     //validate
     check(is_account(new_manager), "new manager account doesn't exist");
 
-    //update collection
-    collections.modify(c, same_payer, [&](auto& col) {
+    //update group
+    groups.modify(g, same_payer, [&](auto& col) {
         col.manager = new_manager;
     });
+
 }
 
 //======================== nft actions ========================
 
-ACTION marble::newnft(name owner, name collection_name, string content, 
-    optional<string> checksum, optional<string> algorithm) {
-    //open collections table, get collection
-    collections_table collections(get_self(), get_self().value);
-    auto& c = collections.get(collection_name.value, "collection name not found");
+ACTION marble::newnft(name owner, name group_name) {
+    
+    //open groups table, get group
+    groups_table groups(get_self(), get_self().value);
+    auto& g = groups.get(group_name.value, "group name not found");
 
     //authenticate
-    require_auth(c.manager);
+    require_auth(g.manager);
 
     //validate
-    check(c.supply + 1 <= c.supply_cap, "supply cap reached");
-
-    string initial_checksum = "";
-    string initial_algo = "";
-
-    if (checksum) {
-        initial_checksum = *checksum;
-    }
-
-    if (algorithm) {
-        initial_algo = *algorithm;
-    }
+    check(g.supply + 1 <= g.supply_cap, "supply cap reached");
 
     //open configs singleton, get configs
     configs_singleton configs(get_self(), get_self().value);
@@ -218,81 +227,46 @@ ACTION marble::newnft(name owner, name collection_name, string content,
     uint64_t new_serial = conf.last_serial + 1;
     conf.last_serial += 1;
 
-    //set new config with updates last_serial
+    //set new config with updated last_serial
     configs.set(conf, get_self());
 
     nfts_table nfts(get_self(), get_self().value);
     auto n = nfts.find(new_serial);
 
     //validate
-    check(n == nfts.end(), "serial already exists");
+    check(n == nfts.end(), "serial already exists. contact admin.");
 
     //emplace new nft
     nfts.emplace(get_self(), [&](auto& col) {
         col.serial = new_serial;
-        col.collection = collection_name;
+        col.group = group_name;
         col.owner = owner;
-        col.content = content;
-        col.checksum = initial_checksum;
-        col.algorithm = initial_algo;
     });
 
-    //update collection
-    collections.modify(c, same_payer, [&](auto& col) {
+    //update group
+    groups.modify(g, same_payer, [&](auto& col) {
         col.supply += 1;
         col.issued_supply += 1;
-    });
-}
-
-ACTION marble::updatenft(uint64_t serial, string content, 
-    optional<string> checksum, optional<string> algorithm) {
-
-    nfts_table nfts(get_self(), get_self().value);
-    auto& n = nfts.get(serial, "nft not found");
-
-    collections_table collections(get_self(), get_self().value);
-    auto& c = collections.get(n.collection.value, "collection not found");
-
-    //authenticate
-    require_auth(c.manager);
-
-    //validate
-    check(c.options.at("updateable"_n) == true, "nft not updateable");
-
-    string new_checksum = "";
-    string new_algo = n.algorithm;
-
-    if (checksum) {
-        new_checksum = *checksum;
-    }
-
-    if (algorithm) {
-        new_algo = *algorithm;
-    }
-
-    //update nft
-    nfts.modify(n, same_payer, [&](auto& col) {
-        col.content = content;
-        col.checksum = new_checksum;
-        col.algorithm = new_algo;
     });
 
 }
 
 ACTION marble::transfernft(uint64_t serial, name new_owner, string memo) {
 
+    //open nfts table, get nft
     nfts_table nfts(get_self(), get_self().value);
     auto& n = nfts.get(serial, "nft not found");
 
-    collections_table collections(get_self(), get_self().value);
-    auto& c = collections.get(n.collection.value, "collection not found");
+    //open groups table, get group
+    groups_table groups(get_self(), get_self().value);
+    auto& g = groups.get(n.group.value, "group not found");
 
     //authenticate
-    require_auth(c.manager);
+    require_auth(g.manager);
 
     //validate
     check(is_account(new_owner), "new owner account doesn't exist");
-    check(c.options.at("transferable"_n) == true, "nft is not transferable");
+    check(g.settings.at("transferable"_n), "nft is not transferable");
 
     //update nft
     nfts.modify(n, same_payer, [&](auto& col) {
@@ -306,21 +280,23 @@ ACTION marble::transfernft(uint64_t serial, name new_owner, string memo) {
 
 ACTION marble::destroynft(uint64_t serial, string memo) {
 
+    //open nfts table, get nft
     nfts_table nfts(get_self(), get_self().value);
     auto& n = nfts.get(serial, "nft not found");
 
-    collections_table collections(get_self(), get_self().value);
-    auto& c = collections.get(n.collection.value, "collection not found");
+    //open groups table, get group
+    groups_table groups(get_self(), get_self().value);
+    auto& g = groups.get(n.group.value, "group not found");
 
     //authenticate
-    require_auth(c.manager);
+    require_auth(g.manager);
 
     //validate
-    check(c.options.at("destructible"_n) == true, "nft is not destructible");
-    check(c.supply > 0, "cannot reduce below zero supply");
+    check(g.settings.at("destructible"_n), "nft is not destructible");
+    check(g.supply > 0, "cannot reduce supply below zero");
 
-    //update collection
-    collections.modify(c, same_payer, [&](auto& col) {
+    //update group
+    groups.modify(g, same_payer, [&](auto& col) {
         col.supply -= 1;
     });
 
@@ -329,27 +305,129 @@ ACTION marble::destroynft(uint64_t serial, string memo) {
 
 }
 
+//======================== tag actions ========================
+
+ACTION marble::newtag(uint64_t serial, name tag_name, string content,
+    optional<string> checksum, optional<string> algorithm) {
+
+    //open tags table, search for tag
+    tags_table tags(get_self(), serial);
+    auto t_itr = tags.find(tag_name.value);
+
+    //validate
+    check(tag_name != name(0), "tag name cannot be empty");
+    check(t_itr == tags.end(), "tag name already exists on nft");
+
+    //initialize
+    string chsum = "";
+    string algo = "";
+
+    if (checksum) {
+        chsum = *checksum;
+    }
+
+    if (algorithm) {
+        algo = *algorithm;
+    }
+
+    //emplace tag
+    tags.emplace(get_self(), [&](auto& col) {
+        col.tag_name = tag_name;
+        col.content = content;
+        col.checksum = chsum;
+        col.algorithm = algo;
+    });
+
+}
+
+ACTION marble::updatetag(uint64_t serial, name tag_name, string new_content,
+    optional<string> new_checksum, optional<string> new_algorithm) {
+
+    //open nfts table, get nft
+    nfts_table nfts(get_self(), get_self().value);
+    auto& n = nfts.get(serial, "nft not found");
+
+    //open groups table, get group
+    groups_table groups(get_self(), get_self().value);
+    auto& g = groups.get(n.group.value, "group not found");
+
+    //open tags table, get tag
+    tags_table tags(get_self(), serial);
+    auto& t = tags.get(tag_name.value, "tag not found on nft");
+
+    //authenticate
+    require_auth(g.manager);
+
+    //validate
+    check(g.settings.at("updateable"_n), "tag not updateable");
+
+    string new_chsum = "";
+    string new_algo = t.algorithm;
+
+    if (new_checksum) {
+        new_chsum = *new_checksum;
+    }
+
+    if (new_algorithm) {
+        new_algo = *new_algorithm;
+    }
+
+    //update tag
+    tags.modify(t, same_payer, [&](auto& col) {
+        col.content = new_content;
+        col.checksum = new_chsum;
+        col.algorithm = new_algo;
+    });
+
+}
+
+ACTION marble::removetag(uint64_t serial, name tag_name, string memo) {
+
+    //open nfts table, get nft
+    nfts_table nfts(get_self(), get_self().value);
+    auto& n = nfts.get(serial, "nft not found");
+
+    //open groups table, get group
+    groups_table groups(get_self(), get_self().value);
+    auto& g = groups.get(n.group.value, "group not found");
+
+    //open tags table, get tag
+    tags_table tags(get_self(), serial);
+    auto& t = tags.get(tag_name.value, "tag not found on nft");
+
+    //authenticate
+    require_auth(g.manager);
+
+    //erase nft
+    tags.erase(t);
+
+}
+
 //======================== attribute actions ========================
 
 ACTION marble::newattribute(uint64_t serial, name attribute_name, uint64_t initial_points) {
 
+    //open nfts table, get nft
     nfts_table nfts(get_self(), get_self().value);
     auto& n = nfts.get(serial, "nft not found");
 
-    collections_table collections(get_self(), get_self().value);
-    auto& c = collections.get(n.collection.value, "collection not found");
+    //open groups table, get group
+    groups_table groups(get_self(), get_self().value);
+    auto& g = groups.get(n.group.value, "group not found");
 
+    //open attributes table, get attribute
     attributes_table attributes(get_self(), serial);
     auto a = attributes.find(attribute_name.value);
 
     //authenticate
-    require_auth(c.manager);
+    require_auth(g.manager);
 
     //validate
-    check(initial_points >= 0, "initial points cannot be negative");
     check(a == attributes.end(), "attribute name already exists for nft");
+    check(initial_points >= 0, "initial points cannot be negative");
 
-    attributes.emplace(c.manager, [&](auto& col) {
+    //emplace new tattribute
+    attributes.emplace(g.manager, [&](auto& col) {
         col.attribute_name = attribute_name;
         col.points = initial_points;
     });
@@ -357,69 +435,83 @@ ACTION marble::newattribute(uint64_t serial, name attribute_name, uint64_t initi
 }
 
 ACTION marble::setpoints(uint64_t serial, name attribute_name, uint64_t new_points) {
+    
     //open nfts table, get nft
     nfts_table nfts(get_self(), get_self().value);
     auto& n = nfts.get(serial, "nft not found");
 
-    collections_table collections(get_self(), get_self().value);
-    auto& c = collections.get(n.collection.value, "collection not found");
+    //open groups table, get group
+    groups_table groups(get_self(), get_self().value);
+    auto& g = groups.get(n.group.value, "group not found");
 
+    //open attributes table, get attribute
     attributes_table attributes(get_self(), serial);
     auto& a = attributes.get(attribute_name.value, "attribute not found");
 
     //authenticate
-    require_auth(c.manager);
+    require_auth(g.manager);
 
     //validate
     check(new_points > 0, "new points greater than zero");
 
+    //set new attribute points
     attributes.modify(a, same_payer, [&](auto& col) {
         col.points = new_points;
     });
+
 }
 
 ACTION marble::increasepts(uint64_t serial, name attribute_name, uint64_t points_to_add) {
+    
     //open nfts table, get nft
     nfts_table nfts(get_self(), get_self().value);
     auto& n = nfts.get(serial, "nft not found");
 
-    collections_table collections(get_self(), get_self().value);
-    auto& c = collections.get(n.collection.value, "collection not found");
+    //open groups table, get group
+    groups_table groups(get_self(), get_self().value);
+    auto& g = groups.get(n.group.value, "group not found");
 
+    //open attributes table, get attribute
     attributes_table attributes(get_self(), serial);
     auto& a = attributes.get(attribute_name.value, "attribute not found");
 
     //authenticate
-    require_auth(c.manager);
+    require_auth(g.manager);
 
     //validate
-    check(c.options.at("increasable"_n), "nft not increasable");
+    check(g.settings.at("increasable"_n), "attribute not increasable");
     check(points_to_add > 0, "must add greater than zero points");
 
+    //modify attribute points
     attributes.modify(a, same_payer, [&](auto& col) {
         col.points += points_to_add;
     });
+
 }
 
 ACTION marble::decreasepts(uint64_t serial, name attribute_name, uint64_t points_to_subtract) {
 
+    //open nfts table, get nft
     nfts_table nfts(get_self(), get_self().value);
     auto& n = nfts.get(serial, "nft not found");
 
-    collections_table collections(get_self(), get_self().value);
-    auto& c = collections.get(n.collection.value, "collection not found");
+    //open groups table, get group
+    groups_table groups(get_self(), get_self().value);
+    auto& g = groups.get(n.group.value, "group not found");
 
+    //open attributes table, get attribute
     attributes_table attributes(get_self(), serial);
     auto& a = attributes.get(attribute_name.value, "attribute not found");
 
     //authenticate
-    require_auth(c.manager);
+    require_auth(g.manager);
 
     //validate
-    check(c.options.at("decreasable"_n), "nft not decreasable");
+    check(g.settings.at("decreasable"_n), "nft not decreasable");
     check(points_to_subtract > 0, "must subtract greater than zero points");
     check(points_to_subtract <= a.points, "cannot subtract points below zero");
 
+    //modify attribute points
     attributes.modify(a, same_payer, [&](auto& col) {
         col.points -= points_to_subtract;
     });
@@ -428,17 +520,20 @@ ACTION marble::decreasepts(uint64_t serial, name attribute_name, uint64_t points
 
 ACTION marble::rmvattribute(uint64_t serial, name attribute_name) {
 
+    //open nfts table, get nft
     nfts_table nfts(get_self(), get_self().value);
     auto& n = nfts.get(serial, "nft not found");
 
-    collections_table collections(get_self(), get_self().value);
-    auto& c = collections.get(n.collection.value, "collection not found");
+    //open groups table, get group
+    groups_table groups(get_self(), get_self().value);
+    auto& g = groups.get(n.group.value, "group not found");
 
+    //open attributes table, get attribute
     attributes_table attributes(get_self(), serial);
     auto a = attributes.find(attribute_name.value);
 
     //authenticate
-    require_auth(c.manager);
+    require_auth(g.manager);
 
     //validate
     check(a != attributes.end(), "attribute not found");
