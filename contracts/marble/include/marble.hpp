@@ -25,7 +25,11 @@ CONTRACT marble : public contract {
 
     ~marble();
 
-    //group settings: transferable, destructible, updateable, increasable, decreasable
+    //group settings: transferable, destructible
+
+    //tag settings: taggable, updateable
+
+    //attribute settings: increasable, decreasable
 
     //common attributes: level, power, experience, attack, defense, speed, steps, etc...
 
@@ -43,7 +47,7 @@ CONTRACT marble : public contract {
     //======================== utility actions ========================
 
     //log an event
-    ACTION logevent(name event_name, uint46_t event_value, time_point_sec event_time, string memo);
+    ACTION logevent(name event_name, uint64_t event_value, time_point_sec event_time, string memo);
 
     //======================== group actions ========================
 
@@ -62,7 +66,7 @@ CONTRACT marble : public contract {
 
     //removes a setting from a group
     ACTION rmvsetting(name group_name, name setting_name);
-    using rmvoption_action = action_wrapper<"rmvoption"_n, &marble::rmvoption>;
+    using rmvsetting_action = action_wrapper<"rmvsetting"_n, &marble::rmvsetting>;
 
     //sets a new group manager
     ACTION setmanager(name group_name, name new_manager, string memo);
@@ -86,15 +90,6 @@ CONTRACT marble : public contract {
     ACTION destroynft(uint64_t serial, string memo);
     using destroynft_action = action_wrapper<"destroynft"_n, &marble::destroynft>;
 
-
-
-
-
-
-
-
-
-
     //======================== tag actions ========================
 
     //assign a new tag to an nft
@@ -102,7 +97,7 @@ CONTRACT marble : public contract {
         optional<string> checksum, optional<string> algorithm);
     using newtag_action = action_wrapper<"newtag"_n, &marble::newtag>;
 
-    //update tag content, checksum, and algorithm
+    //update tag content, checksum, and/or algorithm
     ACTION updatetag(uint64_t serial, name tag_name, string new_content,
         optional<string> new_checksum, optional<string> new_algorithm);
     using updatetag_action = action_wrapper<"updatetag"_n, &marble::updatetag>;
@@ -183,16 +178,6 @@ CONTRACT marble : public contract {
         indexed_by<"byowner"_n, const_mem_fun<nft, uint64_t, &nft::by_owner>>
     > nfts_table;
 
-
-
-
-
-
-
-
-
-
-
     //tag content
     //scope: serial
     TABLE tag {
@@ -201,7 +186,7 @@ CONTRACT marble : public contract {
         string checksum;
         string algorithm;
 
-        uint64_t primary_key() const { return content_name.value; }
+        uint64_t primary_key() const { return tag_name.value; }
         EOSLIB_SERIALIZE(tag, (tag_name)(content)(checksum)(algorithm))
     };
     typedef multi_index<"tags"_n, tag> tags_table;
