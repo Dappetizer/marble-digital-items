@@ -1,4 +1,4 @@
-// Marble is a lightweight NFT standard for EOSIO software.
+// Marble is a lightweight NFT format for EOSIO software.
 //
 // author: Craig Branscom
 // company: Dappetizer, LLC
