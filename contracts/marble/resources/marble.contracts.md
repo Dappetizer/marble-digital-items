@@ -152,7 +152,7 @@ icon: https://github.com/Telos-Foundation/images/raw/master/ricardian_assets/eos
 
 Update {{tag_name}} content for NFT Serial #{{serial}}.
 
-<h1 class="contract">removetag</h1>
+<h1 class="contract">rmvtag</h1>
 
 ---
 spec_version: "0.2.0"

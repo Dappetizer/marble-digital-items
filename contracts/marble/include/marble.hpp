@@ -48,6 +48,7 @@ CONTRACT marble : public contract {
 
     //log an event
     ACTION logevent(name event_name, uint64_t event_value, time_point_sec event_time, string memo);
+    using logevent_action = action_wrapper<"logevent"_n, &marble::logevent>;
 
     //======================== group actions ========================
 
@@ -75,7 +76,7 @@ CONTRACT marble : public contract {
     //======================== nft actions ========================
 
     //creates a new nft
-    ACTION newnft(name owner, name group_name);
+    ACTION newnft(name owner, name group_name, bool log);
     using newnft_action = action_wrapper<"newnft"_n, &marble::newnft>;
 
     //transfers ownership of an nft
@@ -103,8 +104,8 @@ CONTRACT marble : public contract {
     using updatetag_action = action_wrapper<"updatetag"_n, &marble::updatetag>;
 
     //remove tag from nft
-    ACTION removetag(uint64_t serial, name tag_name, string memo);
-    using removetag_action = action_wrapper<"removetag"_n, &marble::removetag>;
+    ACTION rmvtag(uint64_t serial, name tag_name, string memo);
+    using removetag_action = action_wrapper<"rmvtag"_n, &marble::rmvtag>;
 
     //======================== attribute actions ========================
 
@@ -160,6 +161,23 @@ CONTRACT marble : public contract {
             (supply)(issued_supply)(supply_cap)(settings))
     };
     typedef multi_index<"groups"_n, group> groups_table;
+
+    //nft frames
+    //scope: self
+    TABLE frame {
+        name frame_name;
+        name group;
+
+        map<name, string> default_tags; //tag_name => default_content
+        map<name, uint64_t> default_attributes; //attribute_name => default_value
+
+        uint64_t primary_key() const { return frame_name.value; }
+        uint64_t by_group() const { return group.value; }
+        EOSLIB_SERIALIZE(frame, (frame_name)(group)(default_tags)(default_attributes))
+    };
+    typedef multi_index<"frames"_n, frame,
+        indexed_by<"bygroup"_n, const_mem_fun<frame, uint64_t, &nft::by_group>>
+    > frames_table;
 
     //individual nft data
     //scope: self

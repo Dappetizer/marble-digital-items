@@ -208,7 +208,7 @@ ACTION marble::setmanager(name group_name, name new_manager, string memo) {
 
 //======================== nft actions ========================
 
-ACTION marble::newnft(name owner, name group_name) {
+ACTION marble::newnft(name owner, name group_name, bool log) {
     
     //open groups table, get group
     groups_table groups(get_self(), get_self().value);
@@ -224,12 +224,15 @@ ACTION marble::newnft(name owner, name group_name) {
     configs_singleton configs(get_self(), get_self().value);
     auto conf = configs.get();
 
+    //initialize
+    auto now = time_point_sec(current_time_point());
     uint64_t new_serial = conf.last_serial + 1;
-    conf.last_serial += 1;
 
-    //set new config with updated last_serial
+    //increment last_serial, set new config
+    conf.last_serial += 1;
     configs.set(conf, get_self());
 
+    //open nfts table, find nft
     nfts_table nfts(get_self(), get_self().value);
     auto n = nfts.find(new_serial);
 
@@ -248,6 +251,16 @@ ACTION marble::newnft(name owner, name group_name) {
         col.supply += 1;
         col.issued_supply += 1;
     });
+
+    if (log) {
+        //inline logevent
+        action(permission_level{get_self(), name("active")}, get_self(), name("logevent"), make_tuple(
+            "newserial"_n, //event_name
+            new_serial, //event_value
+            now, //event_time
+            std::string("log new nft serial") //memo
+        )).send();
+    }
 
 }
 
@@ -381,7 +394,7 @@ ACTION marble::updatetag(uint64_t serial, name tag_name, string new_content,
 
 }
 
-ACTION marble::removetag(uint64_t serial, name tag_name, string memo) {
+ACTION marble::rmvtag(uint64_t serial, name tag_name, string memo) {
 
     //open nfts table, get nft
     nfts_table nfts(get_self(), get_self().value);
