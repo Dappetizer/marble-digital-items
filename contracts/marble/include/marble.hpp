@@ -12,10 +12,7 @@
 using namespace std;
 using namespace eosio;
 
-//TODO?: add map<name, uint64_t> default_attributes
-//TODO?: make blank group in init()
 //TODO?: make checksum and algorithm fields optional
-//TODO?: vector<name> plugins
 
 CONTRACT marble : public contract {
 
