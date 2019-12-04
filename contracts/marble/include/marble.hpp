@@ -47,6 +47,10 @@ CONTRACT marble : public contract {
     ACTION logevent(name event_name, uint64_t event_value, time_point_sec event_time, string memo);
     using logevent_action = action_wrapper<"logevent"_n, &marble::logevent>;
 
+    //pay bandwidth bill
+    ACTION paybwbill();
+    using paybwbill_action = action_wrapper<"paybwbill"_n, &marble::paybwbill>;
+
     //======================== group actions ========================
 
     //creates a new nft group
