@@ -147,8 +147,11 @@ CONTRACT marble : public contract {
 
     //======================== contract tables ========================
 
+    //raw contract ram: ~784,622 bytes
+
     //contract configs
     //scope: singleton
+    //ram: ~255 bytes
     TABLE tokenconfigs {
         name standard; //"marble"_n
         string version;
@@ -161,6 +164,7 @@ CONTRACT marble : public contract {
 
     //nft group data
     //scope: self
+    //ram: variable
     TABLE group {
         string title;
         string description;
@@ -180,6 +184,7 @@ CONTRACT marble : public contract {
 
     //individual nft data
     //scope: self
+    //ram: ~392 bytes
     TABLE nft {
         uint64_t serial;
         name group;
@@ -197,6 +202,7 @@ CONTRACT marble : public contract {
 
     //tag content
     //scope: serial
+    //ram: variable
     TABLE tag {
         name tag_name;
         string content;
@@ -210,6 +216,7 @@ CONTRACT marble : public contract {
 
     //attributes data
     //scope: serial
+    //ram: ~128 bytes
     TABLE attribute {
         name attribute_name;
         int64_t points;
@@ -221,6 +228,7 @@ CONTRACT marble : public contract {
 
     //frames
     //scope: self
+    //ram: variable
     TABLE frame {
         name frame_name;
         name group;
