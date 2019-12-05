@@ -452,7 +452,7 @@ ACTION marble::rmvtag(uint64_t serial, name tag_name, string memo) {
 
 //======================== attribute actions ========================
 
-ACTION marble::newattribute(uint64_t serial, name attribute_name, uint64_t initial_points) {
+ACTION marble::newattribute(uint64_t serial, name attribute_name, int64_t initial_points) {
 
     //open nfts table, get nft
     nfts_table nfts(get_self(), get_self().value);
@@ -471,7 +471,6 @@ ACTION marble::newattribute(uint64_t serial, name attribute_name, uint64_t initi
 
     //validate
     check(a == attributes.end(), "attribute name already exists for nft");
-    check(initial_points >= 0, "initial points cannot be negative");
 
     //emplace new tattribute
     attributes.emplace(g.manager, [&](auto& col) {
@@ -481,7 +480,7 @@ ACTION marble::newattribute(uint64_t serial, name attribute_name, uint64_t initi
 
 }
 
-ACTION marble::setpoints(uint64_t serial, name attribute_name, uint64_t new_points) {
+ACTION marble::setpoints(uint64_t serial, name attribute_name, int64_t new_points) {
     
     //open nfts table, get nft
     nfts_table nfts(get_self(), get_self().value);
@@ -497,9 +496,6 @@ ACTION marble::setpoints(uint64_t serial, name attribute_name, uint64_t new_poin
 
     //authenticate
     require_auth(g.manager);
-
-    //validate
-    check(new_points > 0, "new points greater than zero");
 
     //set new attribute points
     attributes.modify(a, same_payer, [&](auto& col) {
@@ -556,7 +552,6 @@ ACTION marble::decreasepts(uint64_t serial, name attribute_name, uint64_t points
     //validate
     check(g.behaviors.at("decreasable"_n), "nft not decreasable");
     check(points_to_subtract > 0, "must subtract greater than zero points");
-    check(points_to_subtract <= a.points, "cannot subtract points below zero");
 
     //modify attribute points
     attributes.modify(a, same_payer, [&](auto& col) {
@@ -587,5 +582,126 @@ ACTION marble::rmvattribute(uint64_t serial, name attribute_name) {
 
     //erase attribute
     attributes.erase(a);
+
+}
+
+//======================== frame actions ========================
+
+ACTION marble::newframe(name frame_name, name group, map<name, string> default_tags, map<name, int64_t> default_attributes) {
+
+    //open groups table, get group
+    groups_table groups(get_self(), get_self().value);
+    auto& g = groups.get(group.value, "group not found");
+
+    //authenticate
+    require_auth(g.manager);
+
+    //open frames table, find frame
+    frames_table frames(get_self(), get_self().value);
+    auto f = frames.find(frame_name.value);
+
+    //validate
+    check(f == frames.end(), "frame already exists");
+
+    //emplace new frame
+    frames.emplace(g.manager, [&](auto& col) {
+        col.frame_name = frame_name;
+        col.group = group;
+        col.default_tags = default_tags;
+        col.default_attributes = default_attributes;
+    });
+
+}
+
+ACTION marble::applyframe(name frame_name, uint64_t serial, bool overwrite) {
+
+    //open frames table, get frame
+    frames_table frames(get_self(), get_self().value);
+    auto& f = frames.get(frame_name.value, "frame not found");
+
+    //open groups table, get group
+    groups_table groups(get_self(), get_self().value);
+    auto& g = groups.get(f.group.value, "group not found");
+
+    //authenticate
+    require_auth(g.manager);
+
+    //apply tags
+    for (auto itr = f.default_tags.begin(); itr != f.default_tags.end(); itr++) {
+
+        //open tags table, find tag
+        tags_table tags(get_self(), serial);
+        auto t_itr = tags.find(itr->first.value);
+
+        //NOTE: will skip existing tag with same tag name if overwrite is false
+
+        if (t_itr == tags.end()) {
+            
+            //emplace new tag
+            tags.emplace(g.manager, [&](auto& col) {
+                col.tag_name = itr->first;
+                col.content = itr->second;
+                col.checksum = "";
+                col.algorithm = "";
+            });
+
+        } else if (overwrite) {
+
+            //overwrite existing tag
+            tags.modify(t_itr, same_payer, [&](auto& col) {
+                col.content = itr->second;
+                col.checksum = "";
+                col.algorithm = "";
+            });
+
+        }
+
+    }
+
+    //apply attributes
+    for (auto itr = f.default_attributes.begin(); itr != f.default_attributes.end(); itr++) {
+
+        //open attributes table, find attribute
+        attributes_table attributes(get_self(), serial);
+        auto a_itr = attributes.find(itr->first.value);
+
+        //NOTE: will skip existing attribute with same attribute name if overwrite is false
+
+        if (a_itr == attributes.end()) {
+            
+            //emplace new attribute
+            attributes.emplace(g.manager, [&](auto& col) {
+                col.attribute_name = itr->first;
+                col.points = itr->second;
+            });
+
+        } else if (overwrite) {
+
+            //overwrite existing attribute
+            attributes.modify(a_itr, same_payer, [&](auto& col) {
+                col.points = itr->second;
+            });
+
+        }
+
+    }
+
+}
+
+ACTION marble::rmvframe(name frame_name, string memo) {
+
+    //open frames table, get frame
+    frames_table frames(get_self(), get_self().value);
+    auto& f = frames.get(frame_name.value, "frame not found");
+
+    //open groups table, get group
+    groups_table groups(get_self(), get_self().value);
+    auto& g = groups.get(f.group.value, "group not found");
+
+    //authenticate
+    require_auth(g.manager);
+
+    //erase frame
+    frames.erase(f);
 
 }
