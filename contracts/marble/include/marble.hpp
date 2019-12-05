@@ -1,9 +1,9 @@
-// Marble is a lightweight NFT standard for EOSIO software.
+// Marble is a lightweight NFT format for EOSIO software.
 //
 // author: Craig Branscom
 // company: Dappetizer, LLC
 // contract: marble
-// version: v0.3.0
+// version: v0.4.0
 
 #include <eosio/eosio.hpp>
 #include <eosio/action.hpp>
@@ -12,10 +12,10 @@
 using namespace std;
 using namespace eosio;
 
-//TODO?: add map<name, uint64_t> default_attributes
-//TODO?: make blank group in init()
 //TODO?: make checksum and algorithm fields optional
-//TODO?: vector<name> plugins
+//TODO?: make contract ram payer for everything
+
+//TODO: implement transfernfts
 
 CONTRACT marble : public contract {
 
@@ -25,13 +25,11 @@ CONTRACT marble : public contract {
 
     ~marble();
 
-    //group settings: transferable, destructible
+    //group behaviors: mintable, transferable, destructible
 
-    //tag settings: taggable, updateable
+    //tag behaviors: taggable, updateable
 
-    //attribute settings: increasable, decreasable
-
-    //common attributes: level, power, experience, attack, defense, speed, steps, etc...
+    //attribute behaviors: attributable, increasable, decreasable
 
     //======================== admin actions ========================
 
@@ -48,6 +46,11 @@ CONTRACT marble : public contract {
 
     //log an event
     ACTION logevent(name event_name, uint64_t event_value, time_point_sec event_time, string memo);
+    using logevent_action = action_wrapper<"logevent"_n, &marble::logevent>;
+
+    //pay bandwidth bill
+    ACTION paybwbill();
+    using paybwbill_action = action_wrapper<"paybwbill"_n, &marble::paybwbill>;
 
     //======================== group actions ========================
 
@@ -56,17 +59,17 @@ CONTRACT marble : public contract {
         name manager, uint64_t supply_cap);
     using newgroup_action = action_wrapper<"newgroup"_n, &marble::newgroup>;
 
-    //adds a setting to a group
-    ACTION addsetting(name group_name, name setting_name, bool initial_value);
-    using addsetting_action = action_wrapper<"addsetting"_n, &marble::addsetting>;
+    //adds a behavior to a group
+    ACTION addbehavior(name group_name, name behavior_name, bool initial_value);
+    using addbehavior_action = action_wrapper<"addbehavior"_n, &marble::addbehavior>;
 
-    //toggles a group setting on/off
-    ACTION toggle(name group_name, name setting_name, string memo);
+    //toggles a group behavior on/off
+    ACTION toggle(name group_name, name behavior_name, string memo);
     using toggle_action = action_wrapper<"toggle"_n, &marble::toggle>;
 
-    //removes a setting from a group
-    ACTION rmvsetting(name group_name, name setting_name);
-    using rmvsetting_action = action_wrapper<"rmvsetting"_n, &marble::rmvsetting>;
+    //removes a behavior from a group
+    ACTION rmvbehavior(name group_name, name behavior_name);
+    using rmvbehavior_action = action_wrapper<"rmvbehavior"_n, &marble::rmvbehavior>;
 
     //sets a new group manager
     ACTION setmanager(name group_name, name new_manager, string memo);
@@ -75,16 +78,16 @@ CONTRACT marble : public contract {
     //======================== nft actions ========================
 
     //creates a new nft
-    ACTION newnft(name owner, name group_name);
+    ACTION newnft(name owner, name group_name, bool log);
     using newnft_action = action_wrapper<"newnft"_n, &marble::newnft>;
 
-    //transfers ownership of an nft
+    //transfers ownership of a single nft
     ACTION transfernft(uint64_t serial, name new_owner, string memo);
     using transfernft_action = action_wrapper<"transfernft"_n, &marble::transfernft>;
 
-    //transfers ownership of a batch of nfts
-    // ACTION transfernfts(vector<uint64_t> serials, name new_owner, string memo);
-    // using transfernfts_action = action_wrapper<"transfernfts"_n, &marble::transfernfts>;
+    //transfers ownership of one or more nfts
+    ACTION transfernfts(vector<uint64_t> serials, name new_owner, string memo);
+    using transfernfts_action = action_wrapper<"transfernfts"_n, &marble::transfernfts>;
 
     //destroys an nft
     ACTION destroynft(uint64_t serial, string memo);
@@ -103,17 +106,17 @@ CONTRACT marble : public contract {
     using updatetag_action = action_wrapper<"updatetag"_n, &marble::updatetag>;
 
     //remove tag from nft
-    ACTION removetag(uint64_t serial, name tag_name, string memo);
-    using removetag_action = action_wrapper<"removetag"_n, &marble::removetag>;
+    ACTION rmvtag(uint64_t serial, name tag_name, string memo);
+    using removetag_action = action_wrapper<"rmvtag"_n, &marble::rmvtag>;
 
     //======================== attribute actions ========================
 
     //assign a new attribute to an nft
-    ACTION newattribute(uint64_t serial, name attribute_name, uint64_t initial_points);
+    ACTION newattribute(uint64_t serial, name attribute_name, int64_t initial_points);
     using newattribute_action = action_wrapper<"newattribute"_n, &marble::newattribute>;
 
     //sets an attributes points
-    ACTION setpoints(uint64_t serial, name attribute_name, uint64_t new_points);
+    ACTION setpoints(uint64_t serial, name attribute_name, int64_t new_points);
     using setpoints_action = action_wrapper<"setpoints"_n, &marble::setpoints>;
 
     //increases attribute points by amount
@@ -128,10 +131,27 @@ CONTRACT marble : public contract {
     ACTION rmvattribute(uint64_t serial, name attribute_name);
     using rmvattribute_action = action_wrapper<"rmvattribute"_n, &marble::rmvattribute>;
 
+    //======================== frame actions ========================
+
+    //set up a new frame
+    ACTION newframe(name frame_name, name group, map<name, string> default_tags, map<name, int64_t> default_attributes);
+    using newframe_action = action_wrapper<"newframe"_n, &marble::newframe>;
+
+    //applies a frame to an nft
+    ACTION applyframe(name frame_name, uint64_t serial, bool overwrite);
+    using applyframe_action = action_wrapper<"applyframe"_n, &marble::applyframe>;
+
+    //remove a frame
+    ACTION rmvframe(name frame_name, string memo);
+    using rmvframe_action = action_wrapper<"rmvframe"_n, &marble::rmvframe>;
+
     //======================== contract tables ========================
+
+    //raw contract ram: ~784,622 bytes
 
     //contract configs
     //scope: singleton
+    //ram: ~255 bytes
     TABLE tokenconfigs {
         name standard; //"marble"_n
         string version;
@@ -144,25 +164,27 @@ CONTRACT marble : public contract {
 
     //nft group data
     //scope: self
+    //ram: variable
     TABLE group {
-        name group_name;
-        name manager;
         string title;
         string description;
+        name group_name;
+        name manager;
         uint64_t supply;
         uint64_t issued_supply;
         uint64_t supply_cap;
-        map<name, bool> settings;
+        map<name, bool> behaviors;
 
         uint64_t primary_key() const { return group_name.value; }
         EOSLIB_SERIALIZE(group, 
-            (group_name)(manager)(title)(description)
-            (supply)(issued_supply)(supply_cap)(settings))
+            (title)(description)(group_name)(manager)
+            (supply)(issued_supply)(supply_cap)(behaviors))
     };
     typedef multi_index<"groups"_n, group> groups_table;
 
     //individual nft data
     //scope: self
+    //ram: ~392 bytes
     TABLE nft {
         uint64_t serial;
         name group;
@@ -180,6 +202,7 @@ CONTRACT marble : public contract {
 
     //tag content
     //scope: serial
+    //ram: variable
     TABLE tag {
         name tag_name;
         string content;
@@ -193,13 +216,31 @@ CONTRACT marble : public contract {
 
     //attributes data
     //scope: serial
+    //ram: ~128 bytes
     TABLE attribute {
         name attribute_name;
-        uint64_t points;
+        int64_t points;
 
         uint64_t primary_key() const { return attribute_name.value; }
         EOSLIB_SERIALIZE(attribute, (attribute_name)(points))
     };
     typedef multi_index<name("attributes"), attribute> attributes_table;
+
+    //frames
+    //scope: self
+    //ram: variable
+    TABLE frame {
+        name frame_name;
+        name group;
+        map<name, string> default_tags; //tag_name => default_content
+        map<name, int64_t> default_attributes; //attribute_name => default_value
+
+        uint64_t primary_key() const { return frame_name.value; }
+        uint64_t by_group() const { return group.value; }
+        EOSLIB_SERIALIZE(frame, (frame_name)(group)(default_tags)(default_attributes))
+    };
+    typedef multi_index<"frames"_n, frame,
+        indexed_by<"bygroup"_n, const_mem_fun<frame, uint64_t, &frame::by_group>>
+    > frames_table;
 
 };

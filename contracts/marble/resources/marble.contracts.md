@@ -24,8 +24,8 @@ Set the contract version to {{new_version}}.
 
 ---
 spec_version: "0.2.0"
-title: Transfer NFT
-summary: 'Transfer NFT'
+title: Set Admin
+summary: 'Set New Admin'
 icon: https://github.com/Telos-Foundation/images/raw/master/ricardian_assets/eosio.contracts/icons/admin.png#9bf1cec664863bd6aaac0f814b235f8799fb02c850e9aa5da34e8a004bd6518e
 ---
 
@@ -42,6 +42,17 @@ icon: https://github.com/Telos-Foundation/images/raw/master/ricardian_assets/eos
 
 Log a contract event.
 
+<h1 class="contract">paybwbill</h1>
+
+---
+spec_version: "0.2.0"
+title: Bay Bandwidth Bill
+summary: 'Pay CPU and NET Bill for the entire transaction.'
+icon: https://github.com/Telos-Foundation/images/raw/master/ricardian_assets/eosio.contracts/icons/admin.png#9bf1cec664863bd6aaac0f814b235f8799fb02c850e9aa5da34e8a004bd6518e
+---
+
+Pay CPU and NET Bill for the entire transaction.
+
 <h1 class="contract">newgroup</h1>
 
 ---
@@ -53,38 +64,38 @@ icon: https://github.com/Telos-Foundation/images/raw/master/ricardian_assets/eos
 
 Create the {{group_name}} group.
 
-<h1 class="contract">addsetting</h1>
+<h1 class="contract">addbehavior</h1>
 
 ---
 spec_version: "0.2.0"
-title: Add Setting
-summary: 'Add Group Setting'
+title: Add Behavior
+summary: 'Add Group Behavior'
 icon: https://github.com/Telos-Foundation/images/raw/master/ricardian_assets/eosio.contracts/icons/admin.png#9bf1cec664863bd6aaac0f814b235f8799fb02c850e9aa5da34e8a004bd6518e
 ---
 
-Add the {{setting_name}} setting to the {{group_name}} group.
+Add the {{behavior_name}} behavior to the {{group_name}} group.
 
 <h1 class="contract">toggle</h1>
 
 ---
 spec_version: "0.2.0"
-title: Toggle Option
-summary: 'Toggle Group Option'
+title: Toggle Behavior
+summary: 'Toggle Group Behavior On/Off'
 icon: https://github.com/Telos-Foundation/images/raw/master/ricardian_assets/eosio.contracts/icons/admin.png#9bf1cec664863bd6aaac0f814b235f8799fb02c850e9aa5da34e8a004bd6518e
 ---
 
-Toggle the {{option_name}} option on the {{group_name}} group.
+Toggle the {{behavior_name}} behavior on the {{group_name}} group.
 
-<h1 class="contract">rmvsetting</h1>
+<h1 class="contract">rmvbehavior</h1>
 
 ---
 spec_version: "0.2.0"
-title: Remove Setting
-summary: 'Remove Group Setting'
+title: Remove Behavior
+summary: 'Remove Group Behavior'
 icon: https://github.com/Telos-Foundation/images/raw/master/ricardian_assets/eosio.contracts/icons/admin.png#9bf1cec664863bd6aaac0f814b235f8799fb02c850e9aa5da34e8a004bd6518e
 ---
 
-Remove the {{setting_name}} setting from the {{group_name}} group.
+Remove the {{behavior_name}} behavior from the {{group_name}} group.
 
 <h1 class="contract">setmanager</h1>
 
@@ -119,6 +130,17 @@ icon: https://github.com/Telos-Foundation/images/raw/master/ricardian_assets/eos
 
 Transfer NFT Serial #{{serial}} to {{new_owner}}.
 
+<h1 class="contract">transfernfts</h1>
+
+---
+spec_version: "0.2.0"
+title: Transfer NFTs
+summary: 'Transfer NFTs'
+icon: https://github.com/Telos-Foundation/images/raw/master/ricardian_assets/eosio.contracts/icons/admin.png#9bf1cec664863bd6aaac0f814b235f8799fb02c850e9aa5da34e8a004bd6518e
+---
+
+Transfer NFT Serials {{serials}}.
+
 <h1 class="contract">destroynft</h1>
 
 ---
@@ -152,7 +174,7 @@ icon: https://github.com/Telos-Foundation/images/raw/master/ricardian_assets/eos
 
 Update {{tag_name}} content for NFT Serial #{{serial}}.
 
-<h1 class="contract">removetag</h1>
+<h1 class="contract">rmvtag</h1>
 
 ---
 spec_version: "0.2.0"
@@ -217,3 +239,36 @@ icon: https://github.com/Telos-Foundation/images/raw/master/ricardian_assets/eos
 ---
 
 Remove the {{attribute_name}} attribute from NFT Serial #{{serial}}.
+
+<h1 class="contract">newframe</h1>
+
+---
+spec_version: "0.2.0"
+title: New Frame
+summary: 'Create New Frame'
+icon: https://github.com/Telos-Foundation/images/raw/master/ricardian_assets/eosio.contracts/icons/admin.png#9bf1cec664863bd6aaac0f814b235f8799fb02c850e9aa5da34e8a004bd6518e
+---
+
+Create the {{frame_name}} frame for the {{group}} group.
+
+<h1 class="contract">applyframe</h1>
+
+---
+spec_version: "0.2.0"
+title: Apply Frame
+summary: 'Apply Frame to NFT'
+icon: https://github.com/Telos-Foundation/images/raw/master/ricardian_assets/eosio.contracts/icons/admin.png#9bf1cec664863bd6aaac0f814b235f8799fb02c850e9aa5da34e8a004bd6518e
+---
+
+Apply the {{frame_name}} frame to NFT Serial #{{serial}}.
+
+<h1 class="contract">rmvframe</h1>
+
+---
+spec_version: "0.2.0"
+title: Remove Frame
+summary: 'Remove Frame'
+icon: https://github.com/Telos-Foundation/images/raw/master/ricardian_assets/eosio.contracts/icons/admin.png#9bf1cec664863bd6aaac0f814b235f8799fb02c850e9aa5da34e8a004bd6518e
+---
+
+Remove the {{frame_name}} frame from the {{group}} group.

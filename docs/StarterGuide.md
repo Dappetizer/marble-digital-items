@@ -22,18 +22,20 @@ To begin, navigate to the project directory: `marble-standard/`
 
 ## 4. Initialize
 
-The first action called on the contract should be the `init()` action. This will set the initial contract version and initial access method in the tokenconfigs.
+The first action called on the contract should be the `init()` action. This will set the initial contract version and initial admin in the tokenconfigs.
 
 `cleos push action testaccount1 init '[ ... ]' -p testaccount1`
 
-## 5. Create a Collection
+## 5. Create a Group
 
-Collections are sets of NFT's that are all related to each other in some way. NFT's can only belong to a single collection at a time, and not all NFT's in a collection will have sequential serial numbers.
+Groups are sets of NFT's that are all related to each other. NFT's can only belong to a single group at a time, and not all NFT's in a group will have sequential serial numbers.
 
-`cleos push action testaccount1 newcollectn '[ ... ]' -p testaccount1`
+Group Examples: `cards`, `pokemon`, `dragons`, `players`
+
+`cleos push action testaccount1 newgroup '[ ... ]' -p testaccount1`
 
 ## 6. Mint an NFT
 
-Once a collection has been created, NFTs can be minted by the collection manager.
+Once a group has been created, NFTs can be minted by the group manager.
 
 `cleos push action testaccount1 newnft '[ ... ]' -p testaccount1`
