@@ -1,5 +1,5 @@
 # Marble Standard
-A lightweight NFT standard for EOSIO software.
+A customizable NFT standard for EOSIO software.
 
 ### Features
 
@@ -25,7 +25,7 @@ Some example attributes are: `level`, `strength`, `experience`, `friends`, `mile
 
 `Custom Group Management`
 
-Optionally, Marble NFTs can be created as part of a group. A group will define things such as supply cap, transferability, destructibility, and other configurable group-wide options.
+A group will define things such as supply cap, transferability, destructibility, and other configurable group-wide options.
 
 ## Marble Documentation
 
