@@ -24,8 +24,8 @@ Set the contract version to {{new_version}}.
 
 ---
 spec_version: "0.2.0"
-title: Transfer NFT
-summary: 'Transfer NFT'
+title: Set Admin
+summary: 'Set New Admin'
 icon: https://github.com/Telos-Foundation/images/raw/master/ricardian_assets/eosio.contracts/icons/admin.png#9bf1cec664863bd6aaac0f814b235f8799fb02c850e9aa5da34e8a004bd6518e
 ---
 
@@ -130,6 +130,17 @@ icon: https://github.com/Telos-Foundation/images/raw/master/ricardian_assets/eos
 
 Transfer NFT Serial #{{serial}} to {{new_owner}}.
 
+<h1 class="contract">transfernfts</h1>
+
+---
+spec_version: "0.2.0"
+title: Transfer NFTs
+summary: 'Transfer NFTs'
+icon: https://github.com/Telos-Foundation/images/raw/master/ricardian_assets/eosio.contracts/icons/admin.png#9bf1cec664863bd6aaac0f814b235f8799fb02c850e9aa5da34e8a004bd6518e
+---
+
+Transfer NFT Serials {{serials}}.
+
 <h1 class="contract">destroynft</h1>
 
 ---
@@ -228,3 +239,36 @@ icon: https://github.com/Telos-Foundation/images/raw/master/ricardian_assets/eos
 ---
 
 Remove the {{attribute_name}} attribute from NFT Serial #{{serial}}.
+
+<h1 class="contract">newframe</h1>
+
+---
+spec_version: "0.2.0"
+title: New Frame
+summary: 'Create New Frame'
+icon: https://github.com/Telos-Foundation/images/raw/master/ricardian_assets/eosio.contracts/icons/admin.png#9bf1cec664863bd6aaac0f814b235f8799fb02c850e9aa5da34e8a004bd6518e
+---
+
+Create the {{frame_name}} frame for the {{group}} group.
+
+<h1 class="contract">applyframe</h1>
+
+---
+spec_version: "0.2.0"
+title: Apply Frame
+summary: 'Apply Frame to NFT'
+icon: https://github.com/Telos-Foundation/images/raw/master/ricardian_assets/eosio.contracts/icons/admin.png#9bf1cec664863bd6aaac0f814b235f8799fb02c850e9aa5da34e8a004bd6518e
+---
+
+Apply the {{frame_name}} frame to NFT Serial #{{serial}}.
+
+<h1 class="contract">rmvframe</h1>
+
+---
+spec_version: "0.2.0"
+title: Remove Frame
+summary: 'Remove Frame'
+icon: https://github.com/Telos-Foundation/images/raw/master/ricardian_assets/eosio.contracts/icons/admin.png#9bf1cec664863bd6aaac0f814b235f8799fb02c850e9aa5da34e8a004bd6518e
+---
+
+Remove the {{frame_name}} frame from the {{group}} group.

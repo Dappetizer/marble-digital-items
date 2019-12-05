@@ -15,9 +15,7 @@ using namespace eosio;
 //TODO?: make checksum and algorithm fields optional
 //TODO?: make contract ram payer for everything
 
-//TODO: make attribute points an int64_t
 //TODO: implement transfernfts
-//TODO: implement frames
 
 CONTRACT marble : public contract {
 
@@ -83,13 +81,13 @@ CONTRACT marble : public contract {
     ACTION newnft(name owner, name group_name, bool log);
     using newnft_action = action_wrapper<"newnft"_n, &marble::newnft>;
 
-    //transfers ownership of an nft
+    //transfers ownership of a single nft
     ACTION transfernft(uint64_t serial, name new_owner, string memo);
     using transfernft_action = action_wrapper<"transfernft"_n, &marble::transfernft>;
 
-    //transfers ownership of a batch of nfts
-    // ACTION transfernfts(vector<uint64_t> serials, name new_owner, string memo);
-    // using transfernfts_action = action_wrapper<"transfernfts"_n, &marble::transfernfts>;
+    //transfers ownership of one or more nfts
+    ACTION transfernfts(vector<uint64_t> serials, name new_owner, string memo);
+    using transfernfts_action = action_wrapper<"transfernfts"_n, &marble::transfernfts>;
 
     //destroys an nft
     ACTION destroynft(uint64_t serial, string memo);

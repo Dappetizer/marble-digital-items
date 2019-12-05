@@ -288,12 +288,12 @@ ACTION marble::transfernft(uint64_t serial, name new_owner, string memo) {
     nfts_table nfts(get_self(), get_self().value);
     auto& n = nfts.get(serial, "nft not found");
 
+    //authenticate
+    require_auth(n.owner);
+
     //open groups table, get group
     groups_table groups(get_self(), get_self().value);
     auto& g = groups.get(n.group.value, "group not found");
-
-    //authenticate
-    require_auth(g.manager);
 
     //validate
     check(is_account(new_owner), "new owner account doesn't exist");
@@ -309,6 +309,41 @@ ACTION marble::transfernft(uint64_t serial, name new_owner, string memo) {
 
     //notify sender and new owner
     require_recipient(sender);
+    require_recipient(new_owner);
+
+}
+
+ACTION marble::transfernfts(vector<uint64_t> serials, name new_owner, string memo) {
+
+    //validate
+    check(is_account(new_owner), "new owner account doesn't exist");
+
+    //loop over serials
+    for (uint64_t s : serials) {
+
+        //open nfts table, get nft
+        nfts_table nfts(get_self(), get_self().value);
+        auto& n = nfts.get(s, "nft not found");
+
+        //authenticate
+        require_auth(n.owner);
+
+        //open groups table, get group
+        groups_table groups(get_self(), get_self().value);
+        auto& g = groups.get(n.group.value, "group not found");
+
+        //validate
+        check(g.behaviors.at("transferable"_n), "nft is not transferable");
+
+        //update nft
+        nfts.modify(n, same_payer, [&](auto& col) {
+            col.owner = new_owner;
+        });
+
+    }
+
+    //notify new owner
+    // require_recipient(sender);
     require_recipient(new_owner);
 
 }
