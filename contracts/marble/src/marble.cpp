@@ -1,8 +1,8 @@
 #include "../include/marble.hpp"
 
-marble::marble(name self, name code, datastream<const char*> ds) : contract(self, code, ds) {}
+// marble::marble(name self, name code, datastream<const char*> ds) : contract(self, code, ds) {}
 
-marble::~marble() {}
+// marble::~marble() {}
 
 //======================== admin actions ========================
 

@@ -14,16 +14,15 @@ using namespace eosio;
 
 //TODO?: make checksum and algorithm fields optional
 //TODO?: make contract ram payer for everything
-
-//TODO: implement transfernfts
+//TODO?: transfernfts require_recipient all senders
 
 CONTRACT marble : public contract {
 
     public:
 
-    marble(name self, name code, datastream<const char*> ds);
+    marble(name self, name code, datastream<const char*> ds) : contract(self, code, ds) {};
 
-    ~marble();
+    ~marble() {};
 
     //group behaviors: mintable, transferable, destructible
 
