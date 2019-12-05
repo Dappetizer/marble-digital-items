@@ -22,13 +22,11 @@ CONTRACT marble : public contract {
 
     ~marble();
 
-    //group settings: transferable, destructible
+    //group behaviors: mintable, transferable, destructible
 
-    //tag settings: taggable, updateable
+    //tag behaviors: taggable, updateable
 
-    //attribute settings: increasable, decreasable
-
-    //common attributes: level, power, experience, attack, defense, speed, steps, etc...
+    //attribute behaviors: attributable, increasable, decreasable
 
     //======================== admin actions ========================
 
@@ -58,17 +56,17 @@ CONTRACT marble : public contract {
         name manager, uint64_t supply_cap);
     using newgroup_action = action_wrapper<"newgroup"_n, &marble::newgroup>;
 
-    //adds a setting to a group
-    ACTION addsetting(name group_name, name setting_name, bool initial_value);
-    using addsetting_action = action_wrapper<"addsetting"_n, &marble::addsetting>;
+    //adds a behavior to a group
+    ACTION addbehavior(name group_name, name behavior_name, bool initial_value);
+    using addbehavior_action = action_wrapper<"addbehavior"_n, &marble::addbehavior>;
 
-    //toggles a group setting on/off
-    ACTION toggle(name group_name, name setting_name, string memo);
+    //toggles a group behavior on/off
+    ACTION toggle(name group_name, name behavior_name, string memo);
     using toggle_action = action_wrapper<"toggle"_n, &marble::toggle>;
 
-    //removes a setting from a group
-    ACTION rmvsetting(name group_name, name setting_name);
-    using rmvsetting_action = action_wrapper<"rmvsetting"_n, &marble::rmvsetting>;
+    //removes a behavior from a group
+    ACTION rmvbehavior(name group_name, name behavior_name);
+    using rmvbehavior_action = action_wrapper<"rmvbehavior"_n, &marble::rmvbehavior>;
 
     //sets a new group manager
     ACTION setmanager(name group_name, name new_manager, string memo);
@@ -147,19 +145,19 @@ CONTRACT marble : public contract {
     //nft group data
     //scope: self
     TABLE group {
-        name group_name;
-        name manager;
         string title;
         string description;
+        name group_name;
+        name manager;
         uint64_t supply;
         uint64_t issued_supply;
         uint64_t supply_cap;
-        map<name, bool> settings;
+        map<name, bool> behaviors;
 
         uint64_t primary_key() const { return group_name.value; }
         EOSLIB_SERIALIZE(group, 
-            (group_name)(manager)(title)(description)
-            (supply)(issued_supply)(supply_cap)(settings))
+            (title)(description)(group_name)(manager)
+            (supply)(issued_supply)(supply_cap)(behaviors))
     };
     typedef multi_index<"groups"_n, group> groups_table;
 
@@ -177,7 +175,7 @@ CONTRACT marble : public contract {
         EOSLIB_SERIALIZE(frame, (frame_name)(group)(default_tags)(default_attributes))
     };
     typedef multi_index<"frames"_n, frame,
-        indexed_by<"bygroup"_n, const_mem_fun<frame, uint64_t, &nft::by_group>>
+        indexed_by<"bygroup"_n, const_mem_fun<frame, uint64_t, &frame::by_group>>
     > frames_table;
 
     //individual nft data
