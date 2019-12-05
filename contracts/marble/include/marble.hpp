@@ -3,7 +3,7 @@
 // author: Craig Branscom
 // company: Dappetizer, LLC
 // contract: marble
-// version: v0.3.0
+// version: v0.4.0
 
 #include <eosio/eosio.hpp>
 #include <eosio/action.hpp>
