@@ -69,7 +69,7 @@ ACTION marble::setadmin(name new_admin, string memo) {
 
 //======================== utility actions ========================
 
-ACTION marble::logevent(name event_name, uint64_t event_value, time_point_sec event_time, string memo) {
+ACTION marble::logevent(name event_name, int64_t event_value, time_point_sec event_time, string memo) {
 
     //authenticate
     require_auth(get_self());

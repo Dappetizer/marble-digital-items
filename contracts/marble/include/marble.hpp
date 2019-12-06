@@ -15,6 +15,9 @@ using namespace eosio;
 //TODO?: make checksum and algorithm fields optional
 //TODO?: make contract ram payer for everything
 //TODO?: transfernfts require_recipient all senders
+//TODO?: allow frame default overrides (map overrides over defaults, then apply frame)
+
+//TODO: group locking/unlocking + unlock_acct, unlock_auth
 
 CONTRACT marble : public contract {
 
@@ -44,7 +47,7 @@ CONTRACT marble : public contract {
     //======================== utility actions ========================
 
     //log an event
-    ACTION logevent(name event_name, uint64_t event_value, time_point_sec event_time, string memo);
+    ACTION logevent(name event_name, int64_t event_value, time_point_sec event_time, string memo);
     using logevent_action = action_wrapper<"logevent"_n, &marble::logevent>;
 
     //pay bandwidth bill
@@ -106,7 +109,7 @@ CONTRACT marble : public contract {
 
     //remove tag from nft
     ACTION rmvtag(uint64_t serial, name tag_name, string memo);
-    using removetag_action = action_wrapper<"rmvtag"_n, &marble::rmvtag>;
+    using rmvtag_action = action_wrapper<"rmvtag"_n, &marble::rmvtag>;
 
     //======================== attribute actions ========================
 
