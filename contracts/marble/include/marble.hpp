@@ -18,6 +18,7 @@ using namespace eosio;
 //TODO?: allow frame default overrides (map overrides over defaults, then apply frame)
 
 //TODO: group locking/unlocking + unlock_acct, unlock_auth
+//TODO: cleanframe() action to clean an nft frame from an nft
 
 CONTRACT marble : public contract {
 
