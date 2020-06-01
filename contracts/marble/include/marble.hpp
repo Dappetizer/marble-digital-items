@@ -26,6 +26,8 @@ CONTRACT marble : public contract {
 
     //behaviors: mint, transfer, activate, consume, destroy, reclaim, freeze, update
 
+    //total ram consumed: ~765kb
+
     //======================== admin actions ========================
 
     //initialize the contract
