@@ -284,7 +284,7 @@ ACTION marble::mintitem(name to, name group_name) {
 
     //inline logevent
     action(permission_level{get_self(), name("active")}, get_self(), name("logevent"), make_tuple(
-        "newserial"_n, //event_name
+        "mint"_n, //event_name
         int64_t(new_serial), //event_value
         now, //event_time
         logevent_memo //memo
