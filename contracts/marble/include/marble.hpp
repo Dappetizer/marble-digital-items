@@ -102,29 +102,37 @@ CONTRACT marble : public contract {
     //======================== tag actions ========================
 
     //assign a new tag to an item
+    //auth: manager
     ACTION newtag(uint64_t serial, name tag_name, string content, optional<string> checksum, optional<string> algorithm);
 
     //update tag content, checksum, and/or algorithm
+    //auth: manager
     ACTION updatetag(uint64_t serial, name tag_name, string new_content, optional<string> new_checksum, optional<string> new_algorithm);
 
     //remove tag from item
+    //auth: manager
     ACTION rmvtag(uint64_t serial, name tag_name, string memo);
 
     //======================== attribute actions ========================
 
-    //assign a new attribute to an nft
+    //assign a new attribute to an item
+    //auth: manager
     ACTION newattribute(uint64_t serial, name attribute_name, int64_t initial_points);
 
     //sets an attributes points
+    //auth: manager
     ACTION setpoints(uint64_t serial, name attribute_name, int64_t new_points);
 
     //increases attribute points by amount
+    //auth: manager
     ACTION increasepts(uint64_t serial, name attribute_name, uint64_t points_to_add);
 
     //decreases attribute points by amount
+    //auth: manager
     ACTION decreasepts(uint64_t serial, name attribute_name, uint64_t points_to_subtract);
 
-    //removes an attribute from an nft
+    //removes an attribute from an item
+    //auth: manager
     ACTION rmvattribute(uint64_t serial, name attribute_name);
 
     //======================== event actions ========================
@@ -134,26 +142,29 @@ CONTRACT marble : public contract {
     ACTION logevent(name event_name, int64_t event_value, time_point_sec event_time, string memo);
 
     //create a new event (if no custom event time given use current time point)
-    //auth: group.manager
+    //auth: manager
     ACTION newevent(uint64_t serial, name event_name, optional<time_point_sec> custom_event_time);
 
     //set a custom time on an event
-    //auth: group.manager
+    //auth: manager
     ACTION seteventtime(uint64_t serial, name event_name, time_point_sec new_event_time);
 
     //remove an event
-    //auth: group.manager
+    //auth: manager
     ACTION rmvevent(uint64_t serial, name event_name);
 
     //======================== frame actions ========================
 
     //set up a new frame
+    //auth: manager
     ACTION newframe(name frame_name, name group, map<name, string> default_tags, map<name, int64_t> default_attributes);
 
     //applies a frame to an nft
+    //auth: manager
     ACTION applyframe(name frame_name, uint64_t serial, bool overwrite);
 
     //remove a frame
+    //auth: manager
     ACTION rmvframe(name frame_name, string memo);
 
     //======================== contract tables ========================

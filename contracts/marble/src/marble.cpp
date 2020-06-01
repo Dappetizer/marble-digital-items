@@ -85,6 +85,7 @@ ACTION marble::newgroup(string title, string description, name group_name, name 
     check(is_account(manager), "manager account doesn't exist");
 
     //emplace new group
+    //ram payer: self
     groups.emplace(get_self(), [&](auto& col) {
         col.title = title;
         col.description = description;
@@ -97,8 +98,6 @@ ACTION marble::newgroup(string title, string description, name group_name, name 
 
     //initialize
     map<name, bool> initial_behaviors;
-
-    //core behaviors
     initial_behaviors["mint"_n] = true;
     initial_behaviors["transfer"_n] = true;
     initial_behaviors["activate"_n] = false;
@@ -116,6 +115,7 @@ ACTION marble::newgroup(string title, string description, name group_name, name 
         check(bhvr_itr == behaviors.end(), "behavior already exists");
 
         //emplace new behavior
+        //ram payer: self
         behaviors.emplace(get_self(), [&](auto& col) {
             col.behavior_name = p.first;
             col.state = p.second;
@@ -180,6 +180,7 @@ ACTION marble::addbehavior(name group_name, name behavior_name, bool initial_sta
     check(bhvr_itr == behaviors.end(), "behavior already exists");
 
     //emplace new behavior
+    //ram payer: self
     behaviors.emplace(get_self(), [&](auto& col) {
         col.behavior_name = behavior_name;
         col.state = initial_state;
@@ -268,6 +269,7 @@ ACTION marble::mintitem(name to, name group_name) {
     check(itm == items.end(), "serial already exists");
 
     //emplace new item
+    //ram payer: self
     items.emplace(get_self(), [&](auto& col) {
         col.serial = new_serial;
         col.group = group_name;
@@ -435,6 +437,7 @@ ACTION marble::newtag(uint64_t serial, name tag_name, string content, optional<s
     }
 
     //emplace tag
+    //ram payer: self
     tags.emplace(get_self(), [&](auto& col) {
         col.tag_name = tag_name;
         col.content = content;
@@ -526,7 +529,8 @@ ACTION marble::newattribute(uint64_t serial, name attribute_name, int64_t initia
     check(attr_itr == attributes.end(), "attribute name already exists for item");
 
     //emplace new attribute
-    attributes.emplace(grp.manager, [&](auto& col) {
+    //ram payer: self
+    attributes.emplace(get_self(), [&](auto& col) {
         col.attribute_name = attribute_name;
         col.points = initial_points;
     });
@@ -748,7 +752,8 @@ ACTION marble::newframe(name frame_name, name group, map<name, string> default_t
     check(frm_itr == frames.end(), "frame already exists");
 
     //emplace new frame
-    frames.emplace(grp.manager, [&](auto& col) {
+    //ram payer: self
+    frames.emplace(get_self(), [&](auto& col) {
         col.frame_name = frame_name;
         col.group = group;
         col.default_tags = default_tags;
@@ -783,6 +788,7 @@ ACTION marble::applyframe(name frame_name, uint64_t serial, bool overwrite) {
         if (tg_itr == tags.end()) {
             
             //emplace new tag
+            //ram payer: self
             tags.emplace(get_self(), [&](auto& col) {
                 col.tag_name = itr->first;
                 col.content = itr->second;
