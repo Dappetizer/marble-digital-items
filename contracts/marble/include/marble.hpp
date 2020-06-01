@@ -1,4 +1,4 @@
-// Marble is a modular NFT format for EOSIO software.
+// Marble is a modular digital item format for EOSIO software.
 //
 // author: Craig Branscom
 // company: Dappetizer, LLC
@@ -13,10 +13,9 @@ using namespace std;
 using namespace eosio;
 
 //TODO?: make checksum and algorithm fields optional
-//TODO?: transfernfts require_recipient all senders
 //TODO?: allow frame default overrides (map overrides over defaults, then apply frame)
 //TODO?: group locking/unlocking + unlock_acct, unlock_auth
-//TODO?: cleanframe() action to clean an nft frame from an nft
+//TODO?: cleanframe() action to clean an item frame from an item
 
 CONTRACT marble : public contract {
 
@@ -159,7 +158,7 @@ CONTRACT marble : public contract {
     //auth: manager
     ACTION newframe(name frame_name, name group, map<name, string> default_tags, map<name, int64_t> default_attributes);
 
-    //applies a frame to an nft
+    //applies a frame to an item
     //auth: manager
     ACTION applyframe(name frame_name, uint64_t serial, bool overwrite);
 
