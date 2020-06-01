@@ -1,9 +1,9 @@
-// Marble is a lightweight NFT format for EOSIO software.
+// Marble is a modular digital item format for EOSIO software.
 //
 // author: Craig Branscom
 // company: Dappetizer, LLC
 // contract: marble
-// version: v0.4.0
+// version: v0.5.0
 
 #include <eosio/eosio.hpp>
 #include <eosio/action.hpp>
@@ -13,161 +13,185 @@ using namespace std;
 using namespace eosio;
 
 //TODO?: make checksum and algorithm fields optional
-//TODO?: make contract ram payer for everything
-//TODO?: transfernfts require_recipient all senders
 //TODO?: allow frame default overrides (map overrides over defaults, then apply frame)
-
-//TODO: group locking/unlocking + unlock_acct, unlock_auth
-//TODO: cleanframe() action to clean an nft frame from an nft
+//TODO?: group locking/unlocking + unlock_acct, unlock_auth
+//TODO?: cleanframe() action to clean an item frame from an item
 
 CONTRACT marble : public contract {
 
     public:
 
     marble(name self, name code, datastream<const char*> ds) : contract(self, code, ds) {};
-
     ~marble() {};
 
-    //group behaviors: mintable, transferable, destructible
+    //behaviors: mint, transfer, activate, consume, destroy, reclaim, freeze, update
 
-    //tag behaviors: taggable, updateable
-
-    //attribute behaviors: attributable, increasable, decreasable
+    //total ram consumed: ~765kb
 
     //======================== admin actions ========================
 
     //initialize the contract
-    ACTION init(string initial_version, name initial_admin);
+    //auth: self
+    ACTION init(string contract_name, string contract_version, name initial_admin);
 
-    //set a new marble version
+    //set new contract version
+    //auth: admin
     ACTION setversion(string new_version);
 
-    //set a new admin
-    ACTION setadmin(name new_admin, string memo);
-
-    //======================== utility actions ========================
-
-    //log an event
-    ACTION logevent(name event_name, int64_t event_value, time_point_sec event_time, string memo);
-    using logevent_action = action_wrapper<"logevent"_n, &marble::logevent>;
-
-    //pay bandwidth bill
-    ACTION paybwbill();
-    using paybwbill_action = action_wrapper<"paybwbill"_n, &marble::paybwbill>;
+    //set new admin
+    //auth: admin
+    ACTION setadmin(name new_admin);
 
     //======================== group actions ========================
 
-    //creates a new nft group
-    ACTION newgroup(string title, string description, name group_name, 
-        name manager, uint64_t supply_cap);
-    using newgroup_action = action_wrapper<"newgroup"_n, &marble::newgroup>;
+    //create a new item group
+    //auth: admin
+    ACTION newgroup(string title, string description, name group_name, name manager, uint64_t supply_cap);
 
-    //adds a behavior to a group
-    ACTION addbehavior(name group_name, name behavior_name, bool initial_value);
-    using addbehavior_action = action_wrapper<"addbehavior"_n, &marble::addbehavior>;
+    //edit group title and description
+    //auth: manager
+    ACTION editgroup(name group_name, string new_title, string new_description);
 
-    //toggles a group behavior on/off
-    ACTION toggle(name group_name, name behavior_name, string memo);
-    using toggle_action = action_wrapper<"toggle"_n, &marble::toggle>;
-
-    //removes a behavior from a group
-    ACTION rmvbehavior(name group_name, name behavior_name);
-    using rmvbehavior_action = action_wrapper<"rmvbehavior"_n, &marble::rmvbehavior>;
-
-    //sets a new group manager
+    //set a new group manager
+    //auth: manager
     ACTION setmanager(name group_name, name new_manager, string memo);
-    using setmanager_action = action_wrapper<"setmanager"_n, &marble::setmanager>;
 
-    //======================== nft actions ========================
+    //======================== behavior actions ========================
 
-    //creates a new nft
-    ACTION newnft(name owner, name group_name, bool log);
-    using newnft_action = action_wrapper<"newnft"_n, &marble::newnft>;
+    //add a behavior to a group
+    //auth: manager
+    ACTION addbehavior(name group_name, name behavior_name, bool initial_state);
 
-    //transfers ownership of a single nft
-    ACTION transfernft(uint64_t serial, name new_owner, string memo);
-    using transfernft_action = action_wrapper<"transfernft"_n, &marble::transfernft>;
+    //toggle a behavior on/off
+    //auth: manager
+    ACTION toggle(name group_name, name behavior_name);
 
-    //transfers ownership of one or more nfts
-    ACTION transfernfts(vector<uint64_t> serials, name new_owner, string memo);
-    using transfernfts_action = action_wrapper<"transfernfts"_n, &marble::transfernfts>;
+    //remove a behavior from a group
+    //auth: manager
+    ACTION rmvbehavior(name group_name, name behavior_name);
 
-    //destroys an nft
-    ACTION destroynft(uint64_t serial, string memo);
-    using destroynft_action = action_wrapper<"destroynft"_n, &marble::destroynft>;
+    //======================== item actions ========================
+
+    //mint a new item
+    //auth: manager
+    ACTION mintitem(name to, name group_name);
+
+    //transfer ownership of one or more items
+    //auth: owner
+    ACTION transferitem(name from, name to, vector<uint64_t> serials, string memo);
+
+    //activate an item
+    //auth: owner
+    ACTION activateitem(uint64_t serial);
+
+    //consume an item
+    //auth: owner
+    ACTION consumeitem(uint64_t serial);
+
+    //reclaim an item
+    //auth: manager
+    // ACTION reclaimitem(uint64_t serial);
+
+    //freeze an item
+    //auth: manager
+    // ACTION freezeitem(uint64_t serial);
+
+    //destroy an item
+    //auth: manager
+    ACTION destroyitem(uint64_t serial, string memo);
 
     //======================== tag actions ========================
 
-    //assign a new tag to an nft
-    ACTION newtag(uint64_t serial, name tag_name, string content,
-        optional<string> checksum, optional<string> algorithm);
-    using newtag_action = action_wrapper<"newtag"_n, &marble::newtag>;
+    //assign a new tag to an item
+    //auth: manager
+    ACTION newtag(uint64_t serial, name tag_name, string content, optional<string> checksum, optional<string> algorithm);
 
     //update tag content, checksum, and/or algorithm
-    ACTION updatetag(uint64_t serial, name tag_name, string new_content,
-        optional<string> new_checksum, optional<string> new_algorithm);
-    using updatetag_action = action_wrapper<"updatetag"_n, &marble::updatetag>;
+    //auth: manager
+    ACTION updatetag(uint64_t serial, name tag_name, string new_content, optional<string> new_checksum, optional<string> new_algorithm);
 
-    //remove tag from nft
+    //remove tag from item
+    //auth: manager
     ACTION rmvtag(uint64_t serial, name tag_name, string memo);
-    using rmvtag_action = action_wrapper<"rmvtag"_n, &marble::rmvtag>;
 
     //======================== attribute actions ========================
 
-    //assign a new attribute to an nft
+    //assign a new attribute to an item
+    //auth: manager
     ACTION newattribute(uint64_t serial, name attribute_name, int64_t initial_points);
-    using newattribute_action = action_wrapper<"newattribute"_n, &marble::newattribute>;
 
     //sets an attributes points
+    //auth: manager
     ACTION setpoints(uint64_t serial, name attribute_name, int64_t new_points);
-    using setpoints_action = action_wrapper<"setpoints"_n, &marble::setpoints>;
 
     //increases attribute points by amount
+    //auth: manager
     ACTION increasepts(uint64_t serial, name attribute_name, uint64_t points_to_add);
-    using increasepts_action = action_wrapper<"increasepts"_n, &marble::increasepts>;
 
     //decreases attribute points by amount
+    //auth: manager
     ACTION decreasepts(uint64_t serial, name attribute_name, uint64_t points_to_subtract);
-    using decreasepts_action = action_wrapper<"decreasepts"_n, &marble::decreasepts>;
 
-    //removes an attribute from an nft
+    //removes an attribute from an item
+    //auth: manager
     ACTION rmvattribute(uint64_t serial, name attribute_name);
-    using rmvattribute_action = action_wrapper<"rmvattribute"_n, &marble::rmvattribute>;
+
+    //======================== event actions ========================
+
+    //log an event (will not save to events table)
+    //auth: self
+    ACTION logevent(name event_name, int64_t event_value, time_point_sec event_time, string memo);
+
+    //create a new event (if no custom event time given use current time point)
+    //auth: manager
+    ACTION newevent(uint64_t serial, name event_name, optional<time_point_sec> custom_event_time);
+
+    //set a custom time on an event
+    //auth: manager
+    ACTION seteventtime(uint64_t serial, name event_name, time_point_sec new_event_time);
+
+    //remove an event
+    //auth: manager
+    ACTION rmvevent(uint64_t serial, name event_name);
 
     //======================== frame actions ========================
 
     //set up a new frame
+    //auth: manager
     ACTION newframe(name frame_name, name group, map<name, string> default_tags, map<name, int64_t> default_attributes);
-    using newframe_action = action_wrapper<"newframe"_n, &marble::newframe>;
 
-    //applies a frame to an nft
+    //applies a frame to an item
+    //auth: manager
     ACTION applyframe(name frame_name, uint64_t serial, bool overwrite);
-    using applyframe_action = action_wrapper<"applyframe"_n, &marble::applyframe>;
 
     //remove a frame
+    //auth: manager
     ACTION rmvframe(name frame_name, string memo);
-    using rmvframe_action = action_wrapper<"rmvframe"_n, &marble::rmvframe>;
 
     //======================== contract tables ========================
 
-    //raw contract ram: ~784,622 bytes
+    //tokenconfigs for tracking in @cc32d9's repo
+    //scope: self
+    // TABLE tokenconfigs {
+    //     name standard; //"marble"_n
+    //     string version; //v0.5.0
+    //     EOSLIB_SERIALIZE(tokenconfigs, (standard)(version))
+    // };
+    // typedef singleton<"tokenconfigs"_n, tokenconfigs> tokenconfigs_table;
 
-    //contract configs
-    //scope: singleton
-    //ram: ~255 bytes
-    TABLE tokenconfigs {
-        name standard; //"marble"_n
-        string version;
+    //config table
+    //scope: self
+    TABLE config {
+        string contract_name;
+        string contract_version;
         name admin;
         uint64_t last_serial;
-
-        EOSLIB_SERIALIZE(tokenconfigs, (standard)(version)(admin)(last_serial))
+        EOSLIB_SERIALIZE(config, (contract_name)(contract_version)(admin)(last_serial))
     };
-    typedef singleton<"tokenconfigs"_n, tokenconfigs> configs_singleton;
+    typedef singleton<name("config"), config> config_table;
 
-    //nft group data
+    //groups table
     //scope: self
-    //ram: variable
     TABLE group {
         string title;
         string description;
@@ -176,36 +200,41 @@ CONTRACT marble : public contract {
         uint64_t supply;
         uint64_t issued_supply;
         uint64_t supply_cap;
-        map<name, bool> behaviors;
 
         uint64_t primary_key() const { return group_name.value; }
-        EOSLIB_SERIALIZE(group, 
-            (title)(description)(group_name)(manager)
-            (supply)(issued_supply)(supply_cap)(behaviors))
+        EOSLIB_SERIALIZE(group, (title)(description)(group_name)(manager)
+            (supply)(issued_supply)(supply_cap))
     };
-    typedef multi_index<"groups"_n, group> groups_table;
+    typedef multi_index<name("groups"), group> groups_table;
 
-    //individual nft data
+    //behaviors table
+    //scope: group
+    TABLE behavior {
+        name behavior_name;
+        bool state;
+        uint64_t primary_key() const { return behavior_name.value; }
+        EOSLIB_SERIALIZE(behavior, (behavior_name)(state))
+    };
+    typedef multi_index<name("behaviors"), behavior> behaviors_table;
+
+    //items table
     //scope: self
-    //ram: ~392 bytes
-    TABLE nft {
+    TABLE item {
         uint64_t serial;
         name group;
         name owner;
-
         uint64_t primary_key() const { return serial; }
         uint64_t by_group() const { return group.value; }
         uint64_t by_owner() const { return owner.value; }
-        EOSLIB_SERIALIZE(nft, (serial)(group)(owner))
+        EOSLIB_SERIALIZE(item, (serial)(group)(owner))
     };
-    typedef multi_index<"nfts"_n, nft,
-        indexed_by<"bygroup"_n, const_mem_fun<nft, uint64_t, &nft::by_group>>,
-        indexed_by<"byowner"_n, const_mem_fun<nft, uint64_t, &nft::by_owner>>
-    > nfts_table;
+    typedef multi_index<name("items"), item,
+        indexed_by<"bygroup"_n, const_mem_fun<item, uint64_t, &item::by_group>>,
+        indexed_by<"byowner"_n, const_mem_fun<item, uint64_t, &item::by_owner>>
+    > items_table;
 
-    //tag content
+    //tags table
     //scope: serial
-    //ram: variable
     TABLE tag {
         name tag_name;
         string content;
@@ -217,9 +246,8 @@ CONTRACT marble : public contract {
     };
     typedef multi_index<"tags"_n, tag> tags_table;
 
-    //attributes data
+    //attributes table
     //scope: serial
-    //ram: ~128 bytes
     TABLE attribute {
         name attribute_name;
         int64_t points;
@@ -229,14 +257,34 @@ CONTRACT marble : public contract {
     };
     typedef multi_index<name("attributes"), attribute> attributes_table;
 
-    //frames
+    //events table
+    //scope: serial
+    TABLE event {
+        name event_name;
+        time_point_sec event_time;
+
+        uint64_t primary_key() const { return event_name.value; }
+        EOSLIB_SERIALIZE(event, (event_name)(event_time))
+    };
+    typedef multi_index<name("events"), event> events_table;
+
+    //subgroups table
+    //scope: serial
+    // TABLE subgroup {
+    //     name subgroup_name;
+    //     uint64_t primary_key() const { return subgroup_name.value; }
+    //     EOSLIB_SERIALIZE(subgroup, (subgroup_name))
+    // };
+    // typedef multi_index<name("subgroups"), subgroup> subgroups_table;
+
+    //frames table
     //scope: self
-    //ram: variable
     TABLE frame {
         name frame_name;
         name group;
-        map<name, string> default_tags; //tag_name => default_content
-        map<name, int64_t> default_attributes; //attribute_name => default_value
+        map<name, string> default_tags; //tag_name => default content
+        map<name, int64_t> default_attributes; //attribute_name => default value
+        // map<name, time_point_sec> default_events; //event_name => default value
 
         uint64_t primary_key() const { return frame_name.value; }
         uint64_t by_group() const { return group.value; }
