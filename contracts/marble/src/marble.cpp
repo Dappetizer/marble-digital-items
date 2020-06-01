@@ -255,7 +255,7 @@ ACTION marble::mintitem(name to, name group_name) {
     //initialize
     auto now = time_point_sec(current_time_point());
     uint64_t new_serial = conf.last_serial + 1;
-    string logevent_memo = string("serial: ", new_serial);
+    string logevent_memo = "serial: " + to_string(new_serial);
 
     //increment last_serial, set new config
     conf.last_serial += 1;
