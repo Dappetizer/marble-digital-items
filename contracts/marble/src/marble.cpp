@@ -358,12 +358,22 @@ ACTION marble::consumeitem(uint64_t serial) {
     //authenticate
     require_auth(itm.owner);
 
+    //open groups table, get group
+    groups_table groups(get_self(), get_self().value);
+    auto& grp = groups.get(itm.group.value, "group not found");
+
     //open behaviors table, get behavior
     behaviors_table behaviors(get_self(), itm.group.value);
     auto& bhvr = behaviors.get(name("consume").value, "behavior not found");
 
     //validate
     check(bhvr.state, "item is not consumable");
+    check(grp.supply > 0, "cannot reduce supply below zero");
+
+    //update group
+    groups.modify(grp, same_payer, [&](auto& col) {
+        col.supply -= 1;
+    });
 
     //erase item
     items.erase(itm);
