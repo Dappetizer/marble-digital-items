@@ -364,6 +364,12 @@ ACTION marble::consumeitem(uint64_t serial) {
 
     //validate
     check(bhvr.state, "item is not consumable");
+    check(grp.supply > 0, "cannot reduce supply below zero");
+
+    //update group
+    groups.modify(grp, same_payer, [&](auto& col) {
+        col.supply -= 1;
+    });
 
     //erase item
     items.erase(itm);
