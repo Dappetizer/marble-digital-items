@@ -3,7 +3,7 @@
 // author: Craig Branscom
 // company: Dappetizer, LLC
 // contract: marble
-// version: v0.5.0
+// version: v1.0.0
 
 #include <eosio/eosio.hpp>
 #include <eosio/action.hpp>
@@ -24,9 +24,8 @@ CONTRACT marble : public contract {
     marble(name self, name code, datastream<const char*> ds) : contract(self, code, ds) {};
     ~marble() {};
 
-    //behaviors: mint, transfer, activate, consume, destroy, reclaim, freeze, update
-
-    //total ram consumed: ~765kb
+    //behaviors: mint, transfer, activate, consume, destroy
+    //TODO: reclaim, freeze, update
 
     //======================== admin actions ========================
 
