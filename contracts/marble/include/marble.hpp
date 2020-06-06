@@ -163,6 +163,10 @@ CONTRACT marble : public contract {
     //auth: manager
     ACTION applyframe(name frame_name, uint64_t serial, bool overwrite);
 
+    //mints a new item and applies a frame immediately with tag and attribute default overrides
+    //auth: manager
+    ACTION quickbuild(name frame_name, name to, map<name, string> override_tags, map<name, int64_t> override_attributes);
+
     //remove a frame
     //auth: manager
     ACTION rmvframe(name frame_name, string memo);

@@ -235,7 +235,8 @@ ACTION marble::mintitem(name to, name group_name) {
     auto& grp = groups.get(group_name.value, "group name not found");
 
     //authenticate
-    require_auth(grp.manager);
+    // require_auth(grp.manager);
+    check(has_auth(grp.manager) || has_auth(get_self()), "only contract or group manager can mint items");
 
     //open behaviors table, get behavior
     behaviors_table behaviors(get_self(), group_name.value);
@@ -839,6 +840,157 @@ ACTION marble::applyframe(name frame_name, uint64_t serial, bool overwrite) {
             });
 
         } else if (overwrite) {
+
+            //overwrite existing attribute
+            attributes.modify(attr_itr, same_payer, [&](auto& col) {
+                col.points = itr->second;
+            });
+
+        }
+
+    }
+
+}
+
+ACTION marble::quickbuild(name frame_name, name to, map<name, string> override_tags, map<name, int64_t> override_attributes) {
+
+    //open frames table, get frame
+    frames_table frames(get_self(), get_self().value);
+    auto& frm = frames.get(frame_name.value, "frame not found");
+
+    //open groups table, get group
+    groups_table groups(get_self(), get_self().value);
+    auto& grp = groups.get(frm.group.value, "group not found");
+
+    //authenticate
+    require_auth(grp.manager);
+
+    //initialize
+    uint64_t item_serial;
+
+    //open config table, get config
+    config_table configs(get_self(), get_self().value);
+    auto conf = configs.get();
+
+    //set new serial
+    item_serial = conf.last_serial + 1;
+
+    //queue inline mintitem()
+    action(permission_level{get_self(), name("active")}, get_self(), name("mintitem"), make_tuple(
+        to, //to
+        frm.group //group_name
+    )).send();
+
+    //apply default tags
+    for (auto itr = frm.default_tags.begin(); itr != frm.default_tags.end(); itr++) {
+
+        //open tags table, search for tag
+        tags_table tags(get_self(), item_serial);
+        auto tg_itr = tags.find(itr->first.value);
+
+        //if tag not found
+        if (tg_itr == tags.end()) {
+            
+            //emplace new tag
+            //ram payer: contract
+            tags.emplace(get_self(), [&](auto& col) {
+                col.tag_name = itr->first;
+                col.content = itr->second;
+                col.checksum = "";
+                col.algorithm = "";
+            });
+
+        } else {
+
+            //overwrite existing tag
+            tags.modify(tg_itr, same_payer, [&](auto& col) {
+                col.content = itr->second;
+                col.checksum = "";
+                col.algorithm = "";
+            });
+
+        }
+
+    }
+
+    //apply default attributes
+    for (auto itr = frm.default_attributes.begin(); itr != frm.default_attributes.end(); itr++) {
+
+        //open attributes table, find attribute
+        attributes_table attributes(get_self(), item_serial);
+        auto attr_itr = attributes.find(itr->first.value);
+
+        //if attribute not found
+        if (attr_itr == attributes.end()) {
+            
+            //emplace new attribute
+            //ram payer: contract
+            attributes.emplace(get_self(), [&](auto& col) {
+                col.attribute_name = itr->first;
+                col.points = itr->second;
+            });
+
+        } else {
+
+            //overwrite existing attribute
+            attributes.modify(attr_itr, same_payer, [&](auto& col) {
+                col.points = itr->second;
+            });
+
+        }
+
+    }
+
+    //apply tag overrides
+    for (auto itr = override_tags.begin(); itr != override_tags.end(); itr++) {
+
+        //open tags table, search for tag
+        tags_table tags(get_self(), item_serial);
+        auto tg_itr = tags.find(itr->first.value);
+
+        //if tag not found
+        if (tg_itr == tags.end()) {
+            
+            //emplace new tag
+            //ram payer: contract
+            tags.emplace(get_self(), [&](auto& col) {
+                col.tag_name = itr->first;
+                col.content = itr->second;
+                col.checksum = "";
+                col.algorithm = "";
+            });
+
+        } else {
+
+            //overwrite existing tag
+            tags.modify(tg_itr, same_payer, [&](auto& col) {
+                col.content = itr->second;
+                col.checksum = "";
+                col.algorithm = "";
+            });
+
+        }
+
+    }
+
+    //apply attribute overrides
+    for (auto itr = override_attributes.begin(); itr != override_attributes.end(); itr++) {
+
+        //open attributes table, find attribute
+        attributes_table attributes(get_self(), item_serial);
+        auto attr_itr = attributes.find(itr->first.value);
+
+        //if attribute not found
+        if (attr_itr == attributes.end()) {
+            
+            //emplace new attribute
+            //ram payer: self
+            attributes.emplace(get_self(), [&](auto& col) {
+                col.attribute_name = itr->first;
+                col.points = itr->second;
+            });
+
+        } else {
 
             //overwrite existing attribute
             attributes.modify(attr_itr, same_payer, [&](auto& col) {

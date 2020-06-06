@@ -31,38 +31,38 @@ icon: https://github.com/Telos-Foundation/images/raw/master/ricardian_assets/eos
 
 Set the contract admin to {{new_admin}}.
 
-<h1 class="contract">logevent</h1>
-
----
-spec_version: "0.2.0"
-title: Log Event
-summary: 'Log Contract Event'
-icon: https://github.com/Telos-Foundation/images/raw/master/ricardian_assets/eosio.contracts/icons/admin.png#9bf1cec664863bd6aaac0f814b235f8799fb02c850e9aa5da34e8a004bd6518e
----
-
-Log a contract event.
-
-<h1 class="contract">paybwbill</h1>
-
----
-spec_version: "0.2.0"
-title: Bay Bandwidth Bill
-summary: 'Pay CPU and NET Bill for the entire transaction.'
-icon: https://github.com/Telos-Foundation/images/raw/master/ricardian_assets/eosio.contracts/icons/admin.png#9bf1cec664863bd6aaac0f814b235f8799fb02c850e9aa5da34e8a004bd6518e
----
-
-Pay CPU and NET Bill for the entire transaction.
-
 <h1 class="contract">newgroup</h1>
 
 ---
 spec_version: "0.2.0"
 title: New Group
-summary: 'New NFT Group'
+summary: 'New Item Group'
 icon: https://github.com/Telos-Foundation/images/raw/master/ricardian_assets/eosio.contracts/icons/admin.png#9bf1cec664863bd6aaac0f814b235f8799fb02c850e9aa5da34e8a004bd6518e
 ---
 
 Create the {{group_name}} group.
+
+<h1 class="contract">editgroup</h1>
+
+---
+spec_version: "0.2.0"
+title: Edit Group
+summary: 'Edit Group'
+icon: https://github.com/Telos-Foundation/images/raw/master/ricardian_assets/eosio.contracts/icons/admin.png#9bf1cec664863bd6aaac0f814b235f8799fb02c850e9aa5da34e8a004bd6518e
+---
+
+Edit the {{group_name}} group.
+
+<h1 class="contract">setmanager</h1>
+
+---
+spec_version: "0.2.0"
+title: Set Group Manager
+summary: 'Set Group Manager'
+icon: https://github.com/Telos-Foundation/images/raw/master/ricardian_assets/eosio.contracts/icons/admin.png#9bf1cec664863bd6aaac0f814b235f8799fb02c850e9aa5da34e8a004bd6518e
+---
+
+Change the {{group_name}} group manager to {{new_manager}}.
 
 <h1 class="contract">addbehavior</h1>
 
@@ -80,7 +80,7 @@ Add the {{behavior_name}} behavior to the {{group_name}} group.
 ---
 spec_version: "0.2.0"
 title: Toggle Behavior
-summary: 'Toggle Group Behavior On/Off'
+summary: 'Toggle Behavior On/Off'
 icon: https://github.com/Telos-Foundation/images/raw/master/ricardian_assets/eosio.contracts/icons/admin.png#9bf1cec664863bd6aaac0f814b235f8799fb02c850e9aa5da34e8a004bd6518e
 ---
 
@@ -97,60 +97,60 @@ icon: https://github.com/Telos-Foundation/images/raw/master/ricardian_assets/eos
 
 Remove the {{behavior_name}} behavior from the {{group_name}} group.
 
-<h1 class="contract">setmanager</h1>
+<h1 class="contract">mintitem</h1>
 
 ---
 spec_version: "0.2.0"
-title: Set Group Manager
-summary: 'Set Group Manager'
+title: Mint Item
+summary: 'Mint New Item'
 icon: https://github.com/Telos-Foundation/images/raw/master/ricardian_assets/eosio.contracts/icons/admin.png#9bf1cec664863bd6aaac0f814b235f8799fb02c850e9aa5da34e8a004bd6518e
 ---
 
-Change the {{group_name}} group manager to {{new_manager}}.
+Mint a new Item in the {{group_name}} group.
 
-<h1 class="contract">newnft</h1>
+<h1 class="contract">transferitem</h1>
 
 ---
 spec_version: "0.2.0"
-title: New NFT
-summary: 'New NFT'
+title: Transfer Item
+summary: 'Transfer Item'
 icon: https://github.com/Telos-Foundation/images/raw/master/ricardian_assets/eosio.contracts/icons/admin.png#9bf1cec664863bd6aaac0f814b235f8799fb02c850e9aa5da34e8a004bd6518e
 ---
 
-Create a new NFT in the {{group_name}} group.
+Transfer Item Serial #{{serials}} to {{to}}.
 
-<h1 class="contract">transfernft</h1>
+<h1 class="contract">activateitem</h1>
 
 ---
 spec_version: "0.2.0"
-title: Transfer NFT
-summary: 'Transfer NFT'
+title: Activate Item
+summary: 'Activate Item'
 icon: https://github.com/Telos-Foundation/images/raw/master/ricardian_assets/eosio.contracts/icons/admin.png#9bf1cec664863bd6aaac0f814b235f8799fb02c850e9aa5da34e8a004bd6518e
 ---
 
-Transfer NFT Serial #{{serial}} to {{new_owner}}.
+Activate an Item in the {{group_name}} group.
 
-<h1 class="contract">transfernfts</h1>
+<h1 class="contract">consumeitem</h1>
 
 ---
 spec_version: "0.2.0"
-title: Transfer NFTs
-summary: 'Transfer NFTs'
+title: Consume Item
+summary: 'Consume Item'
 icon: https://github.com/Telos-Foundation/images/raw/master/ricardian_assets/eosio.contracts/icons/admin.png#9bf1cec664863bd6aaac0f814b235f8799fb02c850e9aa5da34e8a004bd6518e
 ---
 
-Transfer NFT Serials {{serials}}.
+Consume an Item in the {{group_name}} group.
 
-<h1 class="contract">destroynft</h1>
+<h1 class="contract">destroyitem</h1>
 
 ---
 spec_version: "0.2.0"
-title: Destroy NFT
-summary: 'Destroy NFT'
+title: Destroy Item
+summary: 'Destroy Item'
 icon: https://github.com/Telos-Foundation/images/raw/master/ricardian_assets/eosio.contracts/icons/admin.png#9bf1cec664863bd6aaac0f814b235f8799fb02c850e9aa5da34e8a004bd6518e
 ---
 
-Destroy NFT Serial #{{serial}}.
+Destroy Item Serial #{{serial}}.
 
 <h1 class="contract">newtag</h1>
 
@@ -161,40 +161,40 @@ summary: 'Create New Tag'
 icon: https://github.com/Telos-Foundation/images/raw/master/ricardian_assets/eosio.contracts/icons/admin.png#9bf1cec664863bd6aaac0f814b235f8799fb02c850e9aa5da34e8a004bd6518e
 ---
 
-Create the {{tag_name}} tag for NFT Serial #{{serial}}.
+Create the {{tag_name}} tag for Item Serial #{{serial}}.
 
 <h1 class="contract">updatetag</h1>
 
 ---
 spec_version: "0.2.0"
 title: Update Tag
-summary: 'Update NFT Tag'
+summary: 'Update Item Tag'
 icon: https://github.com/Telos-Foundation/images/raw/master/ricardian_assets/eosio.contracts/icons/admin.png#9bf1cec664863bd6aaac0f814b235f8799fb02c850e9aa5da34e8a004bd6518e
 ---
 
-Update {{tag_name}} content for NFT Serial #{{serial}}.
+Update {{tag_name}} content for Item Serial #{{serial}}.
 
 <h1 class="contract">rmvtag</h1>
 
 ---
 spec_version: "0.2.0"
 title: Remove Tag
-summary: 'Remove NFT Tag'
+summary: 'Remove Item Tag'
 icon: https://github.com/Telos-Foundation/images/raw/master/ricardian_assets/eosio.contracts/icons/admin.png#9bf1cec664863bd6aaac0f814b235f8799fb02c850e9aa5da34e8a004bd6518e
 ---
 
-Remove {{tag_name}} tag from NFT Serial #{{serial}}.
+Remove {{tag_name}} tag from Item Serial #{{serial}}.
 
 <h1 class="contract">newattribute</h1>
 
 ---
 spec_version: "0.2.0"
 title: New Attribute
-summary: 'New NFT Attribute'
+summary: 'New Item Attribute'
 icon: https://github.com/Telos-Foundation/images/raw/master/ricardian_assets/eosio.contracts/icons/admin.png#9bf1cec664863bd6aaac0f814b235f8799fb02c850e9aa5da34e8a004bd6518e
 ---
 
-Add the {{attribute_name}} attribute to NFT Serial #{{serial}} with {{initial_points}} points.
+Add the {{attribute_name}} attribute to Item Serial #{{serial}} with {{initial_points}} points.
 
 <h1 class="contract">setpoints</h1>
 
@@ -205,7 +205,7 @@ summary: 'Set Attribute Points'
 icon: https://github.com/Telos-Foundation/images/raw/master/ricardian_assets/eosio.contracts/icons/admin.png#9bf1cec664863bd6aaac0f814b235f8799fb02c850e9aa5da34e8a004bd6518e
 ---
 
-Set {{attribute_name}} attribute to {{new_points}} for NFT Serial #{{serial}}.
+Set {{attribute_name}} attribute to {{new_points}} for Item Serial #{{serial}}.
 
 <h1 class="contract">increasepts</h1>
 
@@ -216,7 +216,7 @@ summary: 'Increase Attribute Points'
 icon: https://github.com/Telos-Foundation/images/raw/master/ricardian_assets/eosio.contracts/icons/admin.png#9bf1cec664863bd6aaac0f814b235f8799fb02c850e9aa5da34e8a004bd6518e
 ---
 
-Increase the {{attribute_name}} attribute by {{points_to_add}} for NFT Serial #{{serial}}.
+Increase the {{attribute_name}} attribute by {{points_to_add}} for Item Serial #{{serial}}.
 
 <h1 class="contract">decreasepts</h1>
 
@@ -227,18 +227,29 @@ summary: 'Decrease Attribute Points'
 icon: https://github.com/Telos-Foundation/images/raw/master/ricardian_assets/eosio.contracts/icons/admin.png#9bf1cec664863bd6aaac0f814b235f8799fb02c850e9aa5da34e8a004bd6518e
 ---
 
-Decrease the {{attribute_name}} attribute by {{points_to_subtract}} for NFT Serial #{{serial}}.
+Decrease the {{attribute_name}} attribute by {{points_to_subtract}} for Item Serial #{{serial}}.
 
 <h1 class="contract">rmvattribute</h1>
 
 ---
 spec_version: "0.2.0"
 title: Remove Attribute
-summary: 'Remove Attribute From NFT'
+summary: 'Remove Attribute From Item'
 icon: https://github.com/Telos-Foundation/images/raw/master/ricardian_assets/eosio.contracts/icons/admin.png#9bf1cec664863bd6aaac0f814b235f8799fb02c850e9aa5da34e8a004bd6518e
 ---
 
-Remove the {{attribute_name}} attribute from NFT Serial #{{serial}}.
+Remove the {{attribute_name}} attribute from Item Serial #{{serial}}.
+
+<h1 class="contract">logevent</h1>
+
+---
+spec_version: "0.2.0"
+title: Log Event
+summary: 'Log Contract Event'
+icon: https://github.com/Telos-Foundation/images/raw/master/ricardian_assets/eosio.contracts/icons/admin.png#9bf1cec664863bd6aaac0f814b235f8799fb02c850e9aa5da34e8a004bd6518e
+---
+
+Log a contract event.
 
 <h1 class="contract">newframe</h1>
 
@@ -256,11 +267,11 @@ Create the {{frame_name}} frame for the {{group}} group.
 ---
 spec_version: "0.2.0"
 title: Apply Frame
-summary: 'Apply Frame to NFT'
+summary: 'Apply Frame to Item'
 icon: https://github.com/Telos-Foundation/images/raw/master/ricardian_assets/eosio.contracts/icons/admin.png#9bf1cec664863bd6aaac0f814b235f8799fb02c850e9aa5da34e8a004bd6518e
 ---
 
-Apply the {{frame_name}} frame to NFT Serial #{{serial}}.
+Apply the {{frame_name}} frame to Item Serial #{{serial}}.
 
 <h1 class="contract">rmvframe</h1>
 
