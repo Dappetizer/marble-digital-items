@@ -65,6 +65,10 @@ CONTRACT marble : public contract {
     //auth: manager
     ACTION toggle(name group_name, name behavior_name);
 
+    //lock a behavior to prevent mutations
+    //auth: manager
+    ACTION lockbhvr(name group_name, name behavior_name);
+
     //remove a behavior from a group
     //auth: manager
     ACTION rmvbehavior(name group_name, name behavior_name);
@@ -109,6 +113,10 @@ CONTRACT marble : public contract {
     //auth: manager
     ACTION updatetag(uint64_t serial, name tag_name, string new_content, optional<string> new_checksum, optional<string> new_algorithm);
 
+    //lock a tag to prevent mutations
+    //auth: manager
+    ACTION locktag(uint64_t serial, name tag_name);
+
     //remove tag from item
     //auth: manager
     ACTION rmvtag(uint64_t serial, name tag_name, string memo);
@@ -131,6 +139,10 @@ CONTRACT marble : public contract {
     //auth: manager
     ACTION decreasepts(uint64_t serial, name attribute_name, uint64_t points_to_subtract);
 
+    //locks an attribute to prevent mutations
+    //auth: manager
+    ACTION lockattr(uint64_t serial, name attribute_name);
+
     //removes an attribute from an item
     //auth: manager
     ACTION rmvattribute(uint64_t serial, name attribute_name);
@@ -148,6 +160,10 @@ CONTRACT marble : public contract {
     //set a custom time on an event
     //auth: manager
     ACTION seteventtime(uint64_t serial, name event_name, time_point_sec new_event_time);
+
+    //lock an event time to prevent mutations
+    //auth: manager
+    ACTION lockevent(uint64_t serial, name event_name);
 
     //remove an event
     //auth: manager
@@ -215,8 +231,10 @@ CONTRACT marble : public contract {
     TABLE behavior {
         name behavior_name;
         bool state;
+        bool locked;
+
         uint64_t primary_key() const { return behavior_name.value; }
-        EOSLIB_SERIALIZE(behavior, (behavior_name)(state))
+        EOSLIB_SERIALIZE(behavior, (behavior_name)(state)(locked))
     };
     typedef multi_index<name("behaviors"), behavior> behaviors_table;
 
@@ -243,9 +261,10 @@ CONTRACT marble : public contract {
         string content;
         string checksum;
         string algorithm;
+        bool locked;
 
         uint64_t primary_key() const { return tag_name.value; }
-        EOSLIB_SERIALIZE(tag, (tag_name)(content)(checksum)(algorithm))
+        EOSLIB_SERIALIZE(tag, (tag_name)(content)(checksum)(algorithm)(locked))
     };
     typedef multi_index<"tags"_n, tag> tags_table;
 
@@ -254,9 +273,10 @@ CONTRACT marble : public contract {
     TABLE attribute {
         name attribute_name;
         int64_t points;
+        bool locked;
 
         uint64_t primary_key() const { return attribute_name.value; }
-        EOSLIB_SERIALIZE(attribute, (attribute_name)(points))
+        EOSLIB_SERIALIZE(attribute, (attribute_name)(points)(locked))
     };
     typedef multi_index<name("attributes"), attribute> attributes_table;
 
@@ -265,9 +285,10 @@ CONTRACT marble : public contract {
     TABLE event {
         name event_name;
         time_point_sec event_time;
+        bool locked;
 
         uint64_t primary_key() const { return event_name.value; }
-        EOSLIB_SERIALIZE(event, (event_name)(event_time))
+        EOSLIB_SERIALIZE(event, (event_name)(event_time)(locked))
     };
     typedef multi_index<name("events"), event> events_table;
 

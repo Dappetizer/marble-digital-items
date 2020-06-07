@@ -115,10 +115,11 @@ ACTION marble::newgroup(string title, string description, name group_name, name 
         check(bhvr_itr == behaviors.end(), "behavior already exists");
 
         //emplace new behavior
-        //ram payer: self
+        //ram payer: contract
         behaviors.emplace(get_self(), [&](auto& col) {
             col.behavior_name = p.first;
             col.state = p.second;
+            col.locked = false;
         });
 
     }
@@ -184,6 +185,7 @@ ACTION marble::addbehavior(name group_name, name behavior_name, bool initial_sta
     behaviors.emplace(get_self(), [&](auto& col) {
         col.behavior_name = behavior_name;
         col.state = initial_state;
+        col.locked = false;
     });
 
 }
@@ -201,9 +203,35 @@ ACTION marble::toggle(name group_name, name behavior_name) {
     behaviors_table behaviors(get_self(), group_name.value);
     auto& bhvr = behaviors.get(behavior_name.value, "behavior not found");
 
+    //validate
+    check(!bhvr.locked, "behavior is locked");
+
     //modify behavior
     behaviors.modify(bhvr, same_payer, [&](auto& col) {
         col.state = !bhvr.state;
+    });
+
+}
+
+ACTION marble::lockbhvr(name group_name, name behavior_name) {
+
+    //get group
+    groups_table groups(get_self(), get_self().value);
+    auto& grp = groups.get(group_name.value, "group not found");
+
+    //authenticate
+    require_auth(grp.manager);
+
+    //get behavior
+    behaviors_table behaviors(get_self(), group_name.value);
+    auto& bhvr = behaviors.get(behavior_name.value, "behavior not found");
+
+    //validate
+    check(!bhvr.locked, "behavior already locked");
+
+    //modify behavior
+    behaviors.modify(bhvr, same_payer, [&](auto& col) {
+        col.locked = true;
     });
 
 }
@@ -454,6 +482,7 @@ ACTION marble::newtag(uint64_t serial, name tag_name, string content, optional<s
         col.content = content;
         col.checksum = chsum;
         col.algorithm = algo;
+        col.locked = false;
     });
 
 }
@@ -475,6 +504,9 @@ ACTION marble::updatetag(uint64_t serial, name tag_name, string new_content, opt
     tags_table tags(get_self(), serial);
     auto& tg = tags.get(tag_name.value, "tag not found on item");
 
+    //validate
+    check(!tg.locked, "tag is locked");
+
     string new_chsum = "";
     string new_algo = tg.algorithm;
 
@@ -491,6 +523,33 @@ ACTION marble::updatetag(uint64_t serial, name tag_name, string new_content, opt
         col.content = new_content;
         col.checksum = new_chsum;
         col.algorithm = new_algo;
+    });
+
+}
+
+ACTION marble::locktag(uint64_t serial, name tag_name) {
+
+    //open items table, get item
+    items_table items(get_self(), get_self().value);
+    auto& itm = items.get(serial, "item not found");
+
+    //open groups table, get group
+    groups_table groups(get_self(), get_self().value);
+    auto& grp = groups.get(itm.group.value, "group not found");
+
+    //authenticate
+    require_auth(grp.manager);
+
+    //open tags table, get tag
+    tags_table tags(get_self(), serial);
+    auto& tg = tags.get(tag_name.value, "tag not found on item");
+
+    //validate
+    check(!tg.locked, "tag is already locked");
+
+    //modify tag
+    tags.modify(tg, same_payer, [&](auto& col) {
+        col.locked = true;
     });
 
 }
@@ -544,6 +603,7 @@ ACTION marble::newattribute(uint64_t serial, name attribute_name, int64_t initia
     attributes.emplace(get_self(), [&](auto& col) {
         col.attribute_name = attribute_name;
         col.points = initial_points;
+        col.locked = false;
     });
 
 }
@@ -564,6 +624,9 @@ ACTION marble::setpoints(uint64_t serial, name attribute_name, int64_t new_point
 
     //authenticate
     require_auth(grp.manager);
+
+    //validate
+    check(!attr.locked, "attribute is locked");
 
     //set new attribute points
     attributes.modify(attr, same_payer, [&](auto& col) {
@@ -590,6 +653,7 @@ ACTION marble::increasepts(uint64_t serial, name attribute_name, uint64_t points
     require_auth(grp.manager);
 
     //validate
+    check(!attr.locked, "attribute is locked");
     check(points_to_add > 0, "must add greater than zero points");
 
     //modify attribute points
@@ -617,11 +681,39 @@ ACTION marble::decreasepts(uint64_t serial, name attribute_name, uint64_t points
     auto& attr = attributes.get(attribute_name.value, "attribute not found");
 
     //validate
+    check(!attr.locked, "attribute is locked");
     check(points_to_subtract > 0, "must subtract greater than zero points");
 
     //modify attribute points
     attributes.modify(attr, same_payer, [&](auto& col) {
         col.points -= points_to_subtract;
+    });
+
+}
+
+ACTION marble::lockattr(uint64_t serial, name attribute_name) {
+
+    //open items table, get item
+    items_table items(get_self(), get_self().value);
+    auto& itm = items.get(serial, "item not found");
+
+    //open groups table, get group
+    groups_table groups(get_self(), get_self().value);
+    auto& grp = groups.get(itm.group.value, "group not found");
+
+    //authenticate
+    require_auth(grp.manager);
+
+    //open attributes table, get attribute
+    attributes_table attributes(get_self(), serial);
+    auto& attr = attributes.get(attribute_name.value, "attribute not found");
+
+    //validate
+    check(!attr.locked, "attribute is already locked");
+
+    //modify attribute
+    attributes.modify(attr, same_payer, [&](auto& col) {
+        col.locked = true;
     });
 
 }
@@ -715,9 +807,39 @@ ACTION marble::seteventtime(uint64_t serial, name event_name, time_point_sec new
     events_table events(get_self(), serial);
     auto& evnt = events.get(event_name.value, "event not found");
 
+    //validate
+    check(!evnt.locked, "event is locked");
+
     //modify event
     events.modify(evnt, same_payer, [&](auto& col) {
         col.event_time += new_event_time;
+    });
+
+}
+
+ACTION marble::lockevent(uint64_t serial, name event_name) {
+
+    //open items table, get item
+    items_table items(get_self(), get_self().value);
+    auto& itm = items.get(serial, "item not found");
+
+    //open groups table, get group
+    groups_table groups(get_self(), get_self().value);
+    auto& grp = groups.get(itm.group.value, "group not found");
+
+    //authenticate
+    require_auth(grp.manager);
+
+    //open events table, get event
+    events_table events(get_self(), serial);
+    auto& evnt = events.get(event_name.value, "event not found");
+
+    //validate
+    check(!evnt.locked, "event is already locked");
+
+    //modify event
+    events.modify(evnt, same_payer, [&](auto& col) {
+        col.locked = true;
     });
 
 }
@@ -809,6 +931,9 @@ ACTION marble::applyframe(name frame_name, uint64_t serial, bool overwrite) {
 
         } else if (overwrite) {
 
+            //validate
+            check(!tg_itr->locked, "tag is locked");
+
             //overwrite existing tag
             tags.modify(tg_itr, same_payer, [&](auto& col) {
                 col.content = itr->second;
@@ -840,6 +965,9 @@ ACTION marble::applyframe(name frame_name, uint64_t serial, bool overwrite) {
             });
 
         } else if (overwrite) {
+
+            //validate
+            check(!attr_itr->locked, "attribute is locked");
 
             //overwrite existing attribute
             attributes.modify(attr_itr, same_payer, [&](auto& col) {
