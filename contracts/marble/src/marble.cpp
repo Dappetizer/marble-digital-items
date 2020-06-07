@@ -115,10 +115,11 @@ ACTION marble::newgroup(string title, string description, name group_name, name 
         check(bhvr_itr == behaviors.end(), "behavior already exists");
 
         //emplace new behavior
-        //ram payer: self
+        //ram payer: contract
         behaviors.emplace(get_self(), [&](auto& col) {
             col.behavior_name = p.first;
             col.state = p.second;
+            col.locked = false;
         });
 
     }
@@ -184,6 +185,7 @@ ACTION marble::addbehavior(name group_name, name behavior_name, bool initial_sta
     behaviors.emplace(get_self(), [&](auto& col) {
         col.behavior_name = behavior_name;
         col.state = initial_state;
+        col.locked = false;
     });
 
 }
