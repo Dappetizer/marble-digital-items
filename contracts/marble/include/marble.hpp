@@ -3,7 +3,7 @@
 // author: Craig Branscom
 // company: Dappetizer, LLC
 // contract: marble
-// version: v1.0.0
+// version: v1.1.0
 
 #include <eosio/eosio.hpp>
 #include <eosio/action.hpp>
@@ -13,8 +13,6 @@ using namespace std;
 using namespace eosio;
 
 //TODO?: make checksum and algorithm fields optional
-//TODO?: allow frame default overrides (map overrides over defaults, then apply frame)
-//TODO?: group locking/unlocking + unlock_acct, unlock_auth
 //TODO?: cleanframe() action to clean an item frame from an item
 
 CONTRACT marble : public contract {
