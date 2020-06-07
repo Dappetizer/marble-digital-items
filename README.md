@@ -1,37 +1,11 @@
-# Marble Standard
-A customizable NFT standard for EOSIO software.
+# Marble Digital Items
+A modular digital item standard for EOSIO software.
 
-### Features
-
-`Simple Contract Interface`
-
-The Marble Standard is meant to be straightforward and easy to understand - no complex designs to slow you down. Follow the 6 Steps in the [Marble Starter Guide](docs/StarterGuide.md) to easily deploy a Marble NFT.
-
-`Low Resource Consumption`
-
-Marble NFT's are lightweight and take up very few resources, and additional features are designed to be modular and opt-in.
-
-`Verifiable Offchain Content`
-
-Marble Contracts allow individual NFTs to set links pointing to external content. Optional fields are available for setting content checksums and algorithms, adding to the easy auditability of stored NFT content.
-
-Off-chain content could be anything from raw JSON or Markdown, to dStor/IPFS cids.
-
-`Generic Attribute System`
-
-Every Marble NFT can optionally have one or more named attributes assigned to it, each with an associated point value. This generic pattern allows developers the freedom to design and interpret attributes specific to their application use case.
-
-Some example attributes are: `level`, `strength`, `experience`, `friends`, `miles`, `bananas`, etc.
-
-`Custom Group Management`
-
-A group will define things such as supply cap, transferability, destructibility, and other configurable group-wide options.
-
-## Marble Documentation
+## Documentation
 
 | Name | Description |
 | --- | --- |
-| [Starter Guide](docs/StarterGuide.md) | Easy to follow setup, build, and deployment instructions. |
+| [Get Started](https://craig-branscom.gitbook.io/marble-docs/) | Easy to follow build, setup, and usage instructions. |
 
 ## Contributing to Marble Standard
 
