@@ -3,7 +3,7 @@
 // author: Craig Branscom
 // company: Dappetizer, LLC
 // contract: marble
-// version: v1.0.0
+// version: v1.1.0
 
 #include <eosio/eosio.hpp>
 #include <eosio/action.hpp>
@@ -13,8 +13,6 @@ using namespace std;
 using namespace eosio;
 
 //TODO?: make checksum and algorithm fields optional
-//TODO?: allow frame default overrides (map overrides over defaults, then apply frame)
-//TODO?: group locking/unlocking + unlock_acct, unlock_auth
 //TODO?: cleanframe() action to clean an item frame from an item
 
 CONTRACT marble : public contract {
@@ -189,15 +187,6 @@ CONTRACT marble : public contract {
 
     //======================== contract tables ========================
 
-    //tokenconfigs for tracking in @cc32d9's repo
-    //scope: self
-    // TABLE tokenconfigs {
-    //     name standard; //"marble"_n
-    //     string version; //v0.5.0
-    //     EOSLIB_SERIALIZE(tokenconfigs, (standard)(version))
-    // };
-    // typedef singleton<"tokenconfigs"_n, tokenconfigs> tokenconfigs_table;
-
     //config table
     //scope: self
     TABLE config {
@@ -219,7 +208,6 @@ CONTRACT marble : public contract {
         uint64_t supply;
         uint64_t issued_supply;
         uint64_t supply_cap;
-
         uint64_t primary_key() const { return group_name.value; }
         EOSLIB_SERIALIZE(group, (title)(description)(group_name)(manager)
             (supply)(issued_supply)(supply_cap))
@@ -232,7 +220,6 @@ CONTRACT marble : public contract {
         name behavior_name;
         bool state;
         bool locked;
-
         uint64_t primary_key() const { return behavior_name.value; }
         EOSLIB_SERIALIZE(behavior, (behavior_name)(state)(locked))
     };
@@ -262,7 +249,6 @@ CONTRACT marble : public contract {
         string checksum;
         string algorithm;
         bool locked;
-
         uint64_t primary_key() const { return tag_name.value; }
         EOSLIB_SERIALIZE(tag, (tag_name)(content)(checksum)(algorithm)(locked))
     };
@@ -274,7 +260,6 @@ CONTRACT marble : public contract {
         name attribute_name;
         int64_t points;
         bool locked;
-
         uint64_t primary_key() const { return attribute_name.value; }
         EOSLIB_SERIALIZE(attribute, (attribute_name)(points)(locked))
     };
@@ -286,20 +271,10 @@ CONTRACT marble : public contract {
         name event_name;
         time_point_sec event_time;
         bool locked;
-
         uint64_t primary_key() const { return event_name.value; }
         EOSLIB_SERIALIZE(event, (event_name)(event_time)(locked))
     };
     typedef multi_index<name("events"), event> events_table;
-
-    //subgroups table
-    //scope: serial
-    // TABLE subgroup {
-    //     name subgroup_name;
-    //     uint64_t primary_key() const { return subgroup_name.value; }
-    //     EOSLIB_SERIALIZE(subgroup, (subgroup_name))
-    // };
-    // typedef multi_index<name("subgroups"), subgroup> subgroups_table;
 
     //frames table
     //scope: self
