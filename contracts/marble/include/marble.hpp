@@ -12,8 +12,7 @@
 using namespace std;
 using namespace eosio;
 
-//TODO?: make checksum and algorithm fields optional
-//TODO?: cleanframe() action to clean an item frame from an item
+//TODO: reclaim, freeze, update
 
 CONTRACT marble : public contract {
 
@@ -22,8 +21,12 @@ CONTRACT marble : public contract {
     marble(name self, name code, datastream<const char*> ds) : contract(self, code, ds) {};
     ~marble() {};
 
-    //behaviors: mint, transfer, activate, consume, destroy
-    //TODO: reclaim, freeze, update
+    //constants
+    const name MINT = name("mint");
+    const name TRANSFER = name("transfer");
+    const name ACTIVATE = name("activate");
+    const name CONSUME = name("consume");
+    const name DESTROY = name("destroy");
 
     //======================== admin actions ========================
 
