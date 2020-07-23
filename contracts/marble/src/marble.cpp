@@ -866,39 +866,158 @@ ACTION marble::rmvevent(uint64_t serial, name event_name) {
 
 }
 
+//======================== backing actions ========================
+
+ACTION marble::newbacking(uint64_t serial, asset amount) {
+    //validate
+    check(amount.symbol == CORE_SYM, "asset must be core symbol");
+
+    //initialize
+    const symbol token_sym = amount.symbol;
+
+    //open items table, get item
+    items_table items(get_self(), get_self().value);
+    auto& itm = items.get(serial, "item not found");
+
+    //open groups table, get group
+    groups_table groups(get_self(), get_self().value);
+    auto& grp = groups.get(itm.group.value, "group not found");
+
+    //authenticate
+    require_auth(grp.manager);
+
+    //open accounts table, get manager account
+    accounts_table accounts(get_self(), grp.manager.value);
+    auto& acct = accounts.get(token_sym.code().raw(), "account not found");
+
+    //validate
+    check(acct.balance >= amount, "insufficient funds");
+    check(amount.amount > 0, "must back with a positive amount");
+
+    //subtract from account balance
+    accounts.modify(acct, same_payer, [&](auto& col) {
+        col.balance -= amount;
+    });
+
+    //open backings table, search for backing
+    backings_table backings(get_self(), serial);
+    auto back_itr = backings.find(token_sym.code().raw());
+
+    //if backing not found
+    if (back_itr == backings.end()) {
+        //emplace new backing
+        //ram payer: contract
+        backings.emplace(get_self(), [&](auto& col) {
+            col.amount = amount;
+        });
+    } else {
+        //add to existing backing
+        backings.modify(*back_itr, same_payer, [&](auto& col) {
+            col.amount += amount;
+        });
+    }
+
+}
+
+ACTION marble::releaseall(uint64_t serial, name release_to) {
+    //authenticate
+    require_auth(get_self());
+
+    //open items table, search for item
+    items_table items(get_self(), get_self().value);
+    auto itm_itr = items.find(serial);
+
+    //validate
+    check(itm_itr == items.end(), "cannot release backings while item exists");
+
+    //open backings table, get backing
+    backings_table backings(get_self(), serial);
+    auto& back = backings.get(CORE_SYM.code().raw(), "backing not found");
+
+    //open accounts table, get account
+    accounts_table accounts(get_self(), release_to.value);
+    auto acct_itr = accounts.find(CORE_SYM.code().raw());
+
+    //if account found
+    if (acct_itr != accounts.end()) {
+        //add to existing account
+        accounts.modify(*acct_itr, same_payer, [&](auto& col) {
+            col.balance += back.amount;
+        });
+    } else {
+        //create new account
+        //ram payer: self
+        accounts.emplace(get_self(), [&](auto& col) {
+            col.balance = back.amount;
+        });
+    }
+
+    //erase backing
+    backings.erase(back);
+}
+
+//======================== account actions ========================
+
+ACTION marble::withdraw(name account_owner, asset amount) {
+    //validate
+    check(amount.symbol == CORE_SYM, "can only withdraw core token");
+    
+    //authenticate
+    require_auth(account_owner);
+
+    //open accounts table, get deposit
+    accounts_table accounts(get_self(), account_owner.value);
+    auto& acct = accounts.get(amount.symbol.code().raw(), "account not found");
+
+    //validate
+    check(amount.amount > 0, "must withdraw a positive amount");
+    check(acct.balance >= amount, "insufficient funds");
+
+    //update account balance
+    accounts.modify(acct, same_payer, [&](auto& col) {
+        col.balance -= amount;
+    });
+
+    //send inline eosio.token::transfer to withdrawing account
+    //auth: self
+    action(permission_level{get_self(), name("active")}, name("eosio.token"), name("transfer"), make_tuple(
+        get_self(), //from
+        account_owner, //to
+        amount, //quantity
+        std::string("Marble Account Withdrawal") //memo
+    )).send();
+}
+
 //======================== notification handlers ========================
 
-// void marble::catch_transfer(name from, name to, asset quantity, string memo) {
-//     //get initial receiver contract
-//     name rec = get_first_receiver();
+void marble::catch_transfer(name from, name to, asset quantity, string memo) {
+    //get initial receiver contract
+    name rec = get_first_receiver();
 
-//     //validate
-//     if (rec == name("eosio.token") && from != get_self() && quantity.symbol == CORE_SYM) {
-//         //if memo is skip allow regular transfer
-//         if (memo == std::string("skip")) { 
-//             return;
-//         }
-            
-//         //open accounts table, search for account
-//         accounts_table accounts(get_self(), from.value);
-//         auto acct = accounts.find(CORE_SYM.code().raw());
+    //if received notification from eosio.token, not from self, and symbol is TLOS
+    if (rec == name("eosio.token") && from != get_self() && quantity.symbol == CORE_SYM) {
+        //if memo is "deposit"
+        if (memo == std::string("deposit")) { 
+            //open accounts table, search for account
+            accounts_table accounts(get_self(), from.value);
+            auto acct_itr = accounts.find(CORE_SYM.code().raw());
 
-//         //if account found
-//         if (acct != accounts.end()) {
-//             //update existing account
-//             accounts.modify(*acct, same_payer, [&](auto& col) {
-//                 col.balance += quantity;
-//             });
-            
-//         } else {
-//             //make new account
-//             //ram payer: contract
-//             accounts.emplace(get_self(), [&](auto& col) {
-//                 col.balance = quantity;
-//             });
-//         }
-//     }
-// }
+            //if account found
+            if (acct_itr != accounts.end()) {
+                //add to existing account
+                accounts.modify(*acct_itr, same_payer, [&](auto& col) {
+                    col.balance += quantity;
+                });
+            } else {
+                //create new account
+                //ram payer: contract
+                accounts.emplace(get_self(), [&](auto& col) {
+                    col.balance = quantity;
+                });
+            }
+        }
+    }
+}
 
 //======================== frame actions ========================
 

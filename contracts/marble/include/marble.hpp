@@ -13,7 +13,8 @@
 using namespace std;
 using namespace eosio;
 
-//TODO: reclaim, freeze, update
+//TODO: reclaim, freeze, update, release
+//TODO: create release perm, linkauth to releaseall() action
 
 CONTRACT marble : public contract {
 
@@ -94,13 +95,17 @@ CONTRACT marble : public contract {
     //auth: owner
     ACTION consumeitem(uint64_t serial);
 
-    //reclaim an item
+    //reclaim an item from the owner
     //auth: manager
     // ACTION reclaimitem(uint64_t serial);
 
-    //freeze an item
+    //freeze an item to prevent transfer, activate, consume, or destroy
     //auth: manager
     // ACTION freezeitem(uint64_t serial);
+
+    //unfreeze an item
+    //auth: manager
+    // ACTION unfreezeitem(uint64_t serial);
 
     //destroy an item
     //auth: manager
@@ -192,15 +197,25 @@ CONTRACT marble : public contract {
 
     //======================== backing actions ========================
 
-    //back an item with a fungible token
-    //auth: account
-    // ACTION backitem(uint64_t serial, asset amount);
+    //back an item with a fungible token (draws from manager deposit balance)
+    //auth: manager
+    ACTION newbacking(uint64_t serial, asset amount);
+
+    //release all backings from an item (called inline when item is consumed or destroyed)
+    //auth: self
+    ACTION releaseall(uint64_t serial, name release_to);
+
+    //======================== account actions ========================
+
+    //withdraw tokens from a deposit account
+    //auth: account_owner
+    ACTION withdraw(name account_owner, asset amount);
 
     //======================== notification handlers ========================
 
     //catch a transfer from eosio.token
-    // [[eosio::on_notify("eosio.token::transfer")]]
-    // void catch_transfer(name from, name to, asset quantity, string memo);
+    [[eosio::on_notify("eosio.token::transfer")]]
+    void catch_transfer(name from, name to, asset quantity, string memo);
 
     //======================== contract tables ========================
 
@@ -312,24 +327,24 @@ CONTRACT marble : public contract {
 
     //backings table
     //scope: serial
-    // TABLE backing {
-    //     asset amount;
-    //     // bool locked;
-    //     // bool release_behavior;
+    TABLE backing {
+        asset amount;
+        // name release_event; //event_name? behavior_name?
+        // name release_to; //account? owner?
 
-    //     uint64_t primary_key() const { return amount.symbol.code().raw(); }
-    //     EOSLIB_SERIALIZE(backing, (amount))
-    // };
-    // typedef multi_index<name("backings"), backing> backings_table;
+        uint64_t primary_key() const { return amount.symbol.code().raw(); }
+        EOSLIB_SERIALIZE(backing, (amount))
+    };
+    typedef multi_index<name("backings"), backing> backings_table;
 
     //accounts table
     //scope: account
-    // TABLE account {
-    //     asset balance;
+    TABLE account {
+        asset balance;
 
-    //     uint64_t primary_key() const { return balance.symbol.code().raw(); }
-    //     EOSLIB_SERIALIZE(account, (balance))
-    // };
-    // typedef multi_index<name("accounts"), account> accounts_table;
+        uint64_t primary_key() const { return balance.symbol.code().raw(); }
+        EOSLIB_SERIALIZE(account, (balance))
+    };
+    typedef multi_index<name("accounts"), account> accounts_table;
 
 };
