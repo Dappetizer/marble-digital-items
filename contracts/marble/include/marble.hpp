@@ -8,6 +8,7 @@
 #include <eosio/eosio.hpp>
 #include <eosio/action.hpp>
 #include <eosio/singleton.hpp>
+#include <eosio/asset.hpp>
 
 using namespace std;
 using namespace eosio;
@@ -22,6 +23,7 @@ CONTRACT marble : public contract {
     ~marble() {};
 
     //constants
+    const symbol CORE_SYM = symbol("TLOS", 4);
     const name MINT = name("mint");
     const name TRANSFER = name("transfer");
     const name ACTIVATE = name("activate");
@@ -188,6 +190,18 @@ CONTRACT marble : public contract {
     //auth: manager
     ACTION rmvframe(name frame_name, string memo);
 
+    //======================== backing actions ========================
+
+    //back an item with a fungible token
+    //auth: account
+    // ACTION backitem(uint64_t serial, asset amount);
+
+    //======================== notification handlers ========================
+
+    //catch a transfer from eosio.token
+    // [[eosio::on_notify("eosio.token::transfer")]]
+    // void catch_transfer(name from, name to, asset quantity, string memo);
+
     //======================== contract tables ========================
 
     //config table
@@ -295,5 +309,27 @@ CONTRACT marble : public contract {
     typedef multi_index<"frames"_n, frame,
         indexed_by<"bygroup"_n, const_mem_fun<frame, uint64_t, &frame::by_group>>
     > frames_table;
+
+    //backings table
+    //scope: serial
+    // TABLE backing {
+    //     asset amount;
+    //     // bool locked;
+    //     // bool release_behavior;
+
+    //     uint64_t primary_key() const { return amount.symbol.code().raw(); }
+    //     EOSLIB_SERIALIZE(backing, (amount))
+    // };
+    // typedef multi_index<name("backings"), backing> backings_table;
+
+    //accounts table
+    //scope: account
+    // TABLE account {
+    //     asset balance;
+
+    //     uint64_t primary_key() const { return balance.symbol.code().raw(); }
+    //     EOSLIB_SERIALIZE(account, (balance))
+    // };
+    // typedef multi_index<name("accounts"), account> accounts_table;
 
 };

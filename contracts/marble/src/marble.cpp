@@ -866,6 +866,40 @@ ACTION marble::rmvevent(uint64_t serial, name event_name) {
 
 }
 
+//======================== notification handlers ========================
+
+// void marble::catch_transfer(name from, name to, asset quantity, string memo) {
+//     //get initial receiver contract
+//     name rec = get_first_receiver();
+
+//     //validate
+//     if (rec == name("eosio.token") && from != get_self() && quantity.symbol == CORE_SYM) {
+//         //if memo is skip allow regular transfer
+//         if (memo == std::string("skip")) { 
+//             return;
+//         }
+            
+//         //open accounts table, search for account
+//         accounts_table accounts(get_self(), from.value);
+//         auto acct = accounts.find(CORE_SYM.code().raw());
+
+//         //if account found
+//         if (acct != accounts.end()) {
+//             //update existing account
+//             accounts.modify(*acct, same_payer, [&](auto& col) {
+//                 col.balance += quantity;
+//             });
+            
+//         } else {
+//             //make new account
+//             //ram payer: contract
+//             accounts.emplace(get_self(), [&](auto& col) {
+//                 col.balance = quantity;
+//             });
+//         }
+//     }
+// }
+
 //======================== frame actions ========================
 
 ACTION marble::newframe(name frame_name, name group, map<name, string> default_tags, map<name, int64_t> default_attributes) {
