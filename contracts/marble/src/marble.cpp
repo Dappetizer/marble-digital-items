@@ -965,6 +965,17 @@ ACTION marble::release(uint64_t serial, symbol token_symbol, name release_to) {
         });
     }
 
+    //if backing amount greater than per release amount
+    if (back.backing_amount.amount > back.per_release.amount) {
+        //subtract release amount from backing
+        backings.modify(back, same_payer, [&](auto& col) {
+            col.backing_amount -= back.per_release;
+        });
+    } else {
+        //erase backing
+        backings.erase(back);
+    }
+
 }
 
 //======================== trigger actions ========================
