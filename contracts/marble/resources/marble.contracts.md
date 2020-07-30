@@ -86,6 +86,17 @@ icon: https://github.com/Telos-Foundation/images/raw/master/ricardian_assets/eos
 
 Toggle the {{behavior_name}} behavior on the {{group_name}} group.
 
+<h1 class="contract">lockbhvr</h1>
+
+---
+spec_version: "0.2.0"
+title: Lock Behavior
+summary: 'Lock Group Behavior'
+icon: https://github.com/Telos-Foundation/images/raw/master/ricardian_assets/eosio.contracts/icons/admin.png#9bf1cec664863bd6aaac0f814b235f8799fb02c850e9aa5da34e8a004bd6518e
+---
+
+Lock the {{behavior_name}} behavior on the {{group_name}} group.
+
 <h1 class="contract">rmvbehavior</h1>
 
 ---
@@ -95,7 +106,7 @@ summary: 'Remove Group Behavior'
 icon: https://github.com/Telos-Foundation/images/raw/master/ricardian_assets/eosio.contracts/icons/admin.png#9bf1cec664863bd6aaac0f814b235f8799fb02c850e9aa5da34e8a004bd6518e
 ---
 
-Remove the {{behavior_name}} behavior from the {{group_name}} group.
+Remove the {{behavior_name}} behavior on the {{group_name}} group.
 
 <h1 class="contract">mintitem</h1>
 
@@ -117,7 +128,7 @@ summary: 'Transfer Item'
 icon: https://github.com/Telos-Foundation/images/raw/master/ricardian_assets/eosio.contracts/icons/admin.png#9bf1cec664863bd6aaac0f814b235f8799fb02c850e9aa5da34e8a004bd6518e
 ---
 
-Transfer Item Serial #{{serials}} to {{to}}.
+Transfer Item Serials {{serials}} to {{to}}.
 
 <h1 class="contract">activateitem</h1>
 
@@ -174,6 +185,17 @@ icon: https://github.com/Telos-Foundation/images/raw/master/ricardian_assets/eos
 
 Update {{tag_name}} content for Item Serial #{{serial}}.
 
+<h1 class="contract">locktag</h1>
+
+---
+spec_version: "0.2.0"
+title: Lock Tag
+summary: 'Lock Item Tag'
+icon: https://github.com/Telos-Foundation/images/raw/master/ricardian_assets/eosio.contracts/icons/admin.png#9bf1cec664863bd6aaac0f814b235f8799fb02c850e9aa5da34e8a004bd6518e
+---
+
+Lock {{tag_name}} content for Item Serial #{{serial}}.
+
 <h1 class="contract">rmvtag</h1>
 
 ---
@@ -229,6 +251,17 @@ icon: https://github.com/Telos-Foundation/images/raw/master/ricardian_assets/eos
 
 Decrease the {{attribute_name}} attribute by {{points_to_subtract}} for Item Serial #{{serial}}.
 
+<h1 class="contract">lockattr</h1>
+
+---
+spec_version: "0.2.0"
+title: Lock Attribute
+summary: 'Lock Item Attribute'
+icon: https://github.com/Telos-Foundation/images/raw/master/ricardian_assets/eosio.contracts/icons/admin.png#9bf1cec664863bd6aaac0f814b235f8799fb02c850e9aa5da34e8a004bd6518e
+---
+
+Lock {{attribute_name}} attribute for Item Serial #{{serial}}.
+
 <h1 class="contract">rmvattribute</h1>
 
 ---
@@ -250,6 +283,50 @@ icon: https://github.com/Telos-Foundation/images/raw/master/ricardian_assets/eos
 ---
 
 Log a contract event.
+
+<h1 class="contract">newevent</h1>
+
+---
+spec_version: "0.2.0"
+title: New Event
+summary: 'Create New Item Event'
+icon: https://github.com/Telos-Foundation/images/raw/master/ricardian_assets/eosio.contracts/icons/admin.png#9bf1cec664863bd6aaac0f814b235f8799fb02c850e9aa5da34e8a004bd6518e
+---
+
+Create a new event.
+
+<h1 class="contract">seteventtime</h1>
+
+---
+spec_version: "0.2.0"
+title: Set Event Time
+summary: 'Set Item Event Time'
+icon: https://github.com/Telos-Foundation/images/raw/master/ricardian_assets/eosio.contracts/icons/admin.png#9bf1cec664863bd6aaac0f814b235f8799fb02c850e9aa5da34e8a004bd6518e
+---
+
+Set item event time.
+
+<h1 class="contract">lockevent</h1>
+
+---
+spec_version: "0.2.0"
+title: Lock Event
+summary: 'Lock Item Event'
+icon: https://github.com/Telos-Foundation/images/raw/master/ricardian_assets/eosio.contracts/icons/admin.png#9bf1cec664863bd6aaac0f814b235f8799fb02c850e9aa5da34e8a004bd6518e
+---
+
+Lock item event.
+
+<h1 class="contract">rmvevent</h1>
+
+---
+spec_version: "0.2.0"
+title: Remove Event
+summary: 'Remove Item Event'
+icon: https://github.com/Telos-Foundation/images/raw/master/ricardian_assets/eosio.contracts/icons/admin.png#9bf1cec664863bd6aaac0f814b235f8799fb02c850e9aa5da34e8a004bd6518e
+---
+
+Remove item event.
 
 <h1 class="contract">newframe</h1>
 
@@ -273,6 +350,17 @@ icon: https://github.com/Telos-Foundation/images/raw/master/ricardian_assets/eos
 
 Apply the {{frame_name}} frame to Item Serial #{{serial}}.
 
+<h1 class="contract">quickbuild</h1>
+
+---
+spec_version: "0.2.0"
+title: Quick Build
+summary: 'Quick Frame Build'
+icon: https://github.com/Telos-Foundation/images/raw/master/ricardian_assets/eosio.contracts/icons/admin.png#9bf1cec664863bd6aaac0f814b235f8799fb02c850e9aa5da34e8a004bd6518e
+---
+
+Build the {{frame_name}} frame to Item Serial #{{serial}} and apply overrides.
+
 <h1 class="contract">rmvframe</h1>
 
 ---
@@ -283,3 +371,47 @@ icon: https://github.com/Telos-Foundation/images/raw/master/ricardian_assets/eos
 ---
 
 Remove the {{frame_name}} frame from the {{group}} group.
+
+<h1 class="contract">newbacking</h1>
+
+---
+spec_version: "0.2.0"
+title: New Backing
+summary: 'New Item Backing'
+icon: https://github.com/Telos-Foundation/images/raw/master/ricardian_assets/eosio.contracts/icons/admin.png#9bf1cec664863bd6aaac0f814b235f8799fb02c850e9aa5da34e8a004bd6518e
+---
+
+Back item serial {{serial}} with {{amount}}.
+
+<h1 class="contract">release</h1>
+
+---
+spec_version: "0.2.0"
+title: Release Backing
+summary: 'Release Item Backing'
+icon: https://github.com/Telos-Foundation/images/raw/master/ricardian_assets/eosio.contracts/icons/admin.png#9bf1cec664863bd6aaac0f814b235f8799fb02c850e9aa5da34e8a004bd6518e
+---
+
+Release item backing.
+
+<h1 class="contract">releaseall</h1>
+
+---
+spec_version: "0.2.0"
+title: Release All
+summary: 'Release All Backings'
+icon: https://github.com/Telos-Foundation/images/raw/master/ricardian_assets/eosio.contracts/icons/admin.png#9bf1cec664863bd6aaac0f814b235f8799fb02c850e9aa5da34e8a004bd6518e
+---
+
+Release all backings on item serial {{serial}}.
+
+<h1 class="contract">withdraw</h1>
+
+---
+spec_version: "0.2.0"
+title: Withdraw
+summary: 'Withdraw From Account'
+icon: https://github.com/Telos-Foundation/images/raw/master/ricardian_assets/eosio.contracts/icons/admin.png#9bf1cec664863bd6aaac0f814b235f8799fb02c850e9aa5da34e8a004bd6518e
+---
+
+Withdraw tokens from Marble.

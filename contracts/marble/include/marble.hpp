@@ -13,7 +13,11 @@
 using namespace std;
 using namespace eosio;
 
-//TODO: reclaim, freeze, update
+//TODO: reclaim, freeze, update, release
+//TODO: create release perm, linkauth to releaseall() action
+//TODO: add core_symbol to config table
+//TODO: create_or_update_account() function
+//TODO?: add string payload_json to trigger
 
 CONTRACT marble : public contract {
 
@@ -94,17 +98,21 @@ CONTRACT marble : public contract {
     //auth: owner
     ACTION consumeitem(uint64_t serial);
 
-    //reclaim an item
+    //reclaim an item from the owner
     //auth: manager
     // ACTION reclaimitem(uint64_t serial);
-
-    //freeze an item
-    //auth: manager
-    // ACTION freezeitem(uint64_t serial);
 
     //destroy an item
     //auth: manager
     ACTION destroyitem(uint64_t serial, string memo);
+
+    //freeze an item to prevent transfer, activate, consume, reclaim, or destroy
+    //auth: manager
+    // ACTION freezeitem(uint64_t serial);
+
+    //unfreeze an item
+    //auth: manager
+    // ACTION unfreezeitem(uint64_t serial);
 
     //======================== tag actions ========================
 
@@ -192,15 +200,51 @@ CONTRACT marble : public contract {
 
     //======================== backing actions ========================
 
-    //back an item with a fungible token
-    //auth: account
-    // ACTION backitem(uint64_t serial, asset amount);
+    //back an item with a fungible token (draws from manager deposit balance)
+    //auth: manager
+    ACTION newbacking(uint64_t serial, asset amount, optional<name> release_auth, optional<asset> per_release);
+
+    //release configured amount from item backing
+    //auth: release_auth
+    ACTION release(uint64_t serial, symbol token_symbol, name release_to);
+
+    //release all backings from an item
+    //auth: release_auth
+    // ACTION releaseall(uint64_t serial, name release_to);
+
+    //locks a backing to prevent release
+    //auth: manager
+    // ACTION lockbacking(uint64_t serial, symbol token_symbol);
+
+    //======================== trigger actions ========================
+
+    //create a new trigger for an item to be executed on behavior calls
+    //auth: manager
+    // ACTION newtrigger(uint64_t serial, name behavior_name, name action_name, vector<char> action_payload, optional<uint16_t> total_execs);
+
+    //toggle primed state of trigger on/off
+    //auth: manager
+    // ACTION toggleprimed(uint64_t serial, name behavior_name);
+
+    //execute a trigger
+    //auth: contract
+    // ACTION exectrigger(uint64_t serial, name behavior_name);
+
+    //remove a trigger form an item
+    //auth: manager
+    // ACTION rmvtrigger(uint64_t serial, name behavior_name);
+
+    //======================== account actions ========================
+
+    //withdraw tokens from a deposit account
+    //auth: account_owner
+    ACTION withdraw(name account_owner, asset amount);
 
     //======================== notification handlers ========================
 
     //catch a transfer from eosio.token
-    // [[eosio::on_notify("eosio.token::transfer")]]
-    // void catch_transfer(name from, name to, asset quantity, string memo);
+    [[eosio::on_notify("eosio.token::transfer")]]
+    void catch_transfer(name from, name to, asset quantity, string memo);
 
     //======================== contract tables ========================
 
@@ -312,24 +356,57 @@ CONTRACT marble : public contract {
 
     //backings table
     //scope: serial
-    // TABLE backing {
-    //     asset amount;
-    //     // bool locked;
-    //     // bool release_behavior;
+    TABLE backing {
+        asset backing_amount; //amount stored by backing
+        // name release_acct;
+        name release_auth; //account name that can authorize release (self for triggers)
+        asset per_release; //amount released from backing per release call
+        bool locked; //if true backing cannot be released
 
-    //     uint64_t primary_key() const { return amount.symbol.code().raw(); }
-    //     EOSLIB_SERIALIZE(backing, (amount))
+        uint64_t primary_key() const { return backing_amount.symbol.code().raw(); }
+        EOSLIB_SERIALIZE(backing, (backing_amount)(release_auth)(per_release)(locked))
+    };
+    typedef multi_index<name("backings"), backing> backings_table;
+
+    //triggers table
+    //scope: serial
+    // TABLE trigger {
+    //     name behavior_name; //behavior that executes trigger
+
+    //     // pair<char, char> comparator; //<, >, ==, !=, <=, >= (LESS_THAN, GREATER_THAN, EQUAL_TO, NOT_EUQAL_TO, LESS_THAN_EQUAL_TO, GREATER_THAN_EQUAL_TO)
+    //     // variant<string, int64_t, time_point_sec, asset> conditions; //item values to compare before execution
+
+    //     name action_name; //name of action to execute as inline
+    //     vector<char> action_payload; //action payload as packed data
+
+    //     bool primed; //if true will execute when triggered, if false will ignore
+    //     uint16_t remaining_execs; //decrements upon trigger execution
+    //     bool auto_prime; //automatically primes trigger again after execution
+    //     bool auto_erase; //erases trigger after remaining_execs reach zero
+
+    //     uint64_t primary_key() const { return behavior_name.value; }
+    //     EOSLIB_SERIALIZE(trigger, (behavior_name))
     // };
-    // typedef multi_index<name("backings"), backing> backings_table;
+    // typedef multi_index<name("triggers"), trigger> triggers_table;
 
     //accounts table
     //scope: account
-    // TABLE account {
-    //     asset balance;
+    TABLE account {
+        asset balance; //account balance amount
 
-    //     uint64_t primary_key() const { return balance.symbol.code().raw(); }
-    //     EOSLIB_SERIALIZE(account, (balance))
+        uint64_t primary_key() const { return balance.symbol.code().raw(); }
+        EOSLIB_SERIALIZE(account, (balance))
+    };
+    typedef multi_index<name("accounts"), account> accounts_table;
+
+    //deposits table
+    //scope: self //TODO?: contract_account
+    // TABLE deposits {
+    //     asset total_deposits; //total deposited assets across accounts
+    //     uint32_t unique_accounts; //total unique accounts with balance
+    //     uint64_t primary_key() const { return total_deposits.symbol.code().raw(); }
+    //     EOSLIB_SERIALZIE(deposit, (total_deposits)(unique_accounts))
     // };
-    // typedef multi_index<name("accounts"), account> accounts_table;
+    // typedef multi_index<name("deposits"), deposit> deposits_table;
 
 };
