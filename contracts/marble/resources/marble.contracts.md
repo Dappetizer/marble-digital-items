@@ -383,6 +383,17 @@ icon: https://github.com/Telos-Foundation/images/raw/master/ricardian_assets/eos
 
 Back item serial {{serial}} with {{amount}}.
 
+<h1 class="contract">release</h1>
+
+---
+spec_version: "0.2.0"
+title: Release Backing
+summary: 'Release Item Backing'
+icon: https://github.com/Telos-Foundation/images/raw/master/ricardian_assets/eosio.contracts/icons/admin.png#9bf1cec664863bd6aaac0f814b235f8799fb02c850e9aa5da34e8a004bd6518e
+---
+
+Release item backing.
+
 <h1 class="contract">releaseall</h1>
 
 ---

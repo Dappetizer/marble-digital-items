@@ -868,12 +868,9 @@ ACTION marble::rmvevent(uint64_t serial, name event_name) {
 
 //======================== backing actions ========================
 
-ACTION marble::newbacking(uint64_t serial, asset amount) {
+ACTION marble::newbacking(uint64_t serial, asset amount, optional<name> release_auth, optional<asset> per_release) {
     //validate
     check(amount.symbol == CORE_SYM, "asset must be core symbol");
-
-    //initialize
-    const symbol token_sym = amount.symbol;
 
     //open items table, get item
     items_table items(get_self(), get_self().value);
@@ -888,7 +885,7 @@ ACTION marble::newbacking(uint64_t serial, asset amount) {
 
     //open accounts table, get manager account
     accounts_table accounts(get_self(), grp.manager.value);
-    auto& acct = accounts.get(token_sym.code().raw(), "account not found");
+    auto& acct = accounts.get(amount.symbol.code().raw(), "manager account not found");
 
     //validate
     check(acct.balance >= amount, "insufficient funds");
@@ -901,60 +898,78 @@ ACTION marble::newbacking(uint64_t serial, asset amount) {
 
     //open backings table, search for backing
     backings_table backings(get_self(), serial);
-    auto back_itr = backings.find(token_sym.code().raw());
+    auto back_itr = backings.find(amount.symbol.code().raw());
+
+    //initialize
+    name backing_release_auth = get_self();
+    asset backing_per_release = amount;
+
+    //if release_auth param provided
+    if (release_auth) {
+        backing_release_auth = *release_auth;
+    }
+
+    //if per_release param provided
+    if (per_release) {
+        backing_per_release = *per_release;
+    }
 
     //if backing not found
     if (back_itr == backings.end()) {
         //emplace new backing
         //ram payer: contract
         backings.emplace(get_self(), [&](auto& col) {
-            col.amount = amount;
+            col.backing_amount = amount;
+            col.release_auth = backing_release_auth;
+            col.per_release = backing_per_release;
+            col.locked = false;
         });
     } else {
         //add to existing backing
         backings.modify(*back_itr, same_payer, [&](auto& col) {
-            col.amount += amount;
+            col.backing_amount += amount;
         });
     }
 
 }
 
-ACTION marble::releaseall(uint64_t serial, name release_to) {
-    //authenticate
-    require_auth(get_self());
-
-    //open items table, search for item
-    items_table items(get_self(), get_self().value);
-    auto itm_itr = items.find(serial);
-
+ACTION marble::release(uint64_t serial, symbol token_symbol, name release_to) {
     //validate
-    check(itm_itr == items.end(), "cannot release backings while item exists");
+    check(token_symbol == CORE_SYM, "only core symbol allowed");
 
     //open backings table, get backing
     backings_table backings(get_self(), serial);
-    auto& back = backings.get(CORE_SYM.code().raw(), "backing not found");
+    auto& back = backings.get(token_symbol.code().raw(), "backing not found");
 
-    //open accounts table, get account
+    //authenticate
+    require_auth(back.release_auth);
+
+    //validate
+    check(back.backing_amount.amount >= back.per_release.amount, "cannot release more than backing amount");
+
+    //open accounts table, search for account
     accounts_table accounts(get_self(), release_to.value);
-    auto acct_itr = accounts.find(CORE_SYM.code().raw());
+    auto acct_itr = accounts.find(token_symbol.code().raw());
 
     //if account found
     if (acct_itr != accounts.end()) {
         //add to existing account
         accounts.modify(*acct_itr, same_payer, [&](auto& col) {
-            col.balance += back.amount;
+            col.balance += back.per_release;
         });
     } else {
         //create new account
-        //ram payer: self
+        //ram payer: contract
         accounts.emplace(get_self(), [&](auto& col) {
-            col.balance = back.amount;
+            col.balance = back.per_release;
         });
     }
 
-    //erase backing
-    backings.erase(back);
 }
+
+//======================== trigger actions ========================
+
+// ACTION marble::newtrigger(uint64_t serial, name behavior_name, name action_name, vector<char> action_payload, optional<uint16_t> total_execs)
 
 //======================== account actions ========================
 
