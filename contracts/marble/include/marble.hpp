@@ -237,6 +237,10 @@ CONTRACT marble : public contract {
     //auth: manager
     // ACTION toggleprimed(uint64_t serial, name behavior_name);
 
+    //set trigger payload
+    //auth: manager
+    ACTION setpayload(uint64_t serial, name behavior_name, vector<char> new_payload);
+
     //execute a trigger
     //auth: contract
     ACTION exectrigger(uint64_t serial, name behavior_name);
@@ -377,7 +381,7 @@ CONTRACT marble : public contract {
         map<name, string> default_tags; //tag_name => default content
         map<name, int64_t> default_attributes; //attribute_name => default value
         // map<name, time_point_sec> default_events; //event_name => default value
-        // map<symbol, asset> default_backings; //token_symbol => backing_amount
+        // vector<asset> default_backings; //backing amounts (will draw from manager balances)
         // map<name, vector<char>> default_triggers; //behavior_name => trx_payload
 
         uint64_t primary_key() const { return frame_name.value; }

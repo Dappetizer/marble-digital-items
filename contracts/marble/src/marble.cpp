@@ -1068,6 +1068,31 @@ ACTION marble::newtrigger(uint64_t serial, name behavior_name, vector<char> trx_
 
 }
 
+ACTION marble::setpayload(uint64_t serial, name behavior_name, vector<char> new_payload) {
+    //open items table, get item
+    items_table items(get_self(), get_self().value);
+    auto& itm = items.get(serial, "item not found");
+    
+    //open groups table, get group
+    groups_table groups(get_self(), get_self().value);
+    auto& grp = groups.get(itm.group.value, "group not found");
+    
+    //authenticate
+    require_auth(grp.manager);
+
+    //open triggers table, get trigger
+    triggers_table triggers(get_self(), serial);
+    auto& trig = triggers.get(behavior_name.value, "trigger not found");
+
+    //validate
+    check(!trig.locked, "trigger is locked");
+
+    //update trigger payload
+    triggers.modify(trig, same_payer, [&](auto& col) {
+        col.trx_payload = new_payload;
+    });
+}
+
 ACTION marble::exectrigger(uint64_t serial, name behavior_name) {
     //authenticate
     require_auth(get_self());

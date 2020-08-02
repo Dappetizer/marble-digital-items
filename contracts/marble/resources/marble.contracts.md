@@ -405,6 +405,28 @@ icon: https://github.com/Telos-Foundation/images/raw/master/ricardian_assets/eos
 
 Release all backings on item serial {{serial}}.
 
+<h1 class="contract">newtrigger</h1>
+
+---
+spec_version: "0.2.0"
+title: New Trigger
+summary: 'Create New Trigger'
+icon: https://github.com/Telos-Foundation/images/raw/master/ricardian_assets/eosio.contracts/icons/admin.png#9bf1cec664863bd6aaac0f814b235f8799fb02c850e9aa5da34e8a004bd6518e
+---
+
+Create a new trigger.
+
+<h1 class="contract">exectrigger</h1>
+
+---
+spec_version: "0.2.0"
+title: Execute Trigger
+summary: 'Execute A Trigger'
+icon: https://github.com/Telos-Foundation/images/raw/master/ricardian_assets/eosio.contracts/icons/admin.png#9bf1cec664863bd6aaac0f814b235f8799fb02c850e9aa5da34e8a004bd6518e
+---
+
+Execute a trigger.
+
 <h1 class="contract">withdraw</h1>
 
 ---
