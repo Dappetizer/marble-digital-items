@@ -361,7 +361,6 @@ ACTION marble::transferitem(name from, name to, vector<uint64_t> serials, string
 }
 
 ACTION marble::activateitem(uint64_t serial) {
-
     //open items table, get item
     items_table items(get_self(), get_self().value);
     auto& itm = items.get(serial, "item not found");
@@ -376,10 +375,17 @@ ACTION marble::activateitem(uint64_t serial) {
     //validate
     check(bhvr.state, "item is not activatable");
 
+    //if trigger exists
+    if (has_trigger(serial, name("activate"))) {
+        //send inline exectrigger
+        action(permission_level{get_self(), name("active")}, get_self(), name("exectrigger"), make_tuple(
+            serial, //serial
+            name("activate") //behavior_name
+        )).send();
+    }
 }
 
 ACTION marble::consumeitem(uint64_t serial) {
-
     //open items table, get item
     items_table items(get_self(), get_self().value);
     auto& itm = items.get(serial, "item not found");
@@ -404,9 +410,19 @@ ACTION marble::consumeitem(uint64_t serial) {
         col.supply -= 1;
     });
 
+    //TODO: inject owner in backings since item won't exist during inline calls
+
     //erase item
     items.erase(itm);
 
+    //if consume trigger exists
+    if (has_trigger(serial, name("activate"))) {
+        //send inline exectrigger
+        action(permission_level{get_self(), name("active")}, get_self(), name("exectrigger"), make_tuple(
+            serial, //serial
+            name("consume") //behavior_name
+        )).send();
+    }
 }
 
 ACTION marble::destroyitem(uint64_t serial, string memo) {
@@ -980,69 +996,131 @@ ACTION marble::release(uint64_t serial, symbol token_symbol, name release_to) {
 
 //======================== trigger actions ========================
 
-// ACTION marble::newtrigger(uint64_t serial, name behavior_name, name action_name, vector<char> action_payload, optional<uint16_t> total_execs)
+ACTION marble::newtrigger(uint64_t serial, name behavior_name, vector<char> trx_payload, optional<uint16_t> total_execs) {
+    //open items table, get item
+    items_table items(get_self(), get_self().value);
+    auto itm = items.get(serial, "item not found");
 
-//======================== account actions ========================
+    //open groups table, get group
+    groups_table groups(get_self(), get_self().value);
+    auto grp = groups.get(itm.group.value, "group not found");
 
-ACTION marble::withdraw(name account_owner, asset amount) {
-    //validate
-    check(amount.symbol == CORE_SYM, "can only withdraw core token");
-    
     //authenticate
-    require_auth(account_owner);
+    require_auth(grp.manager);
 
-    //open accounts table, get deposit
-    accounts_table accounts(get_self(), account_owner.value);
-    auto& acct = accounts.get(amount.symbol.code().raw(), "account not found");
+    //open triggers table, search for trigger
+    triggers_table triggers(get_self(), serial);
+    auto trig_itr = triggers.find(behavior_name.value);
 
     //validate
-    check(amount.amount > 0, "must withdraw a positive amount");
-    check(acct.balance >= amount, "insufficient funds");
+    check(trig_itr == triggers.end(), "trigger already exists");
 
-    //update account balance
-    accounts.modify(acct, same_payer, [&](auto& col) {
-        col.balance -= amount;
+    //initialize
+    transaction_header trx_header;
+    vector<action> context_free_actions;
+    vector<action> actions;
+    datastream<const char*> ds(trx_payload.data(), trx_payload.size());
+
+    //read from datastream
+    ds >> trx_header;
+    ds >> context_free_actions;
+    ds >> actions;
+
+    //validate
+    check(trx_header.expiration >= time_point_sec(current_time_point()), "transaction expired");
+    check(context_free_actions.empty(), "not allowed to exec a trigger with context-free actions");
+
+    //validate transaction
+    for (action act : actions) {
+        check(act.account == get_self(), "only transactions to self allowed");
+        check(allowed_trigger_action(act.name), "action not allowed in trigger");
+        
+        // release_params params = act.data_as<release_params>();
+        
+        // // string msg = act.name.to_string() + " >>> " + string(act.data.begin(), act.data.end());
+        // string msg = act.name.to_string() + " >>> " 
+        //     + to_string(params.r_serial) + " " 
+        //     + to_string(params.r_sym.precision()) + ","
+        //     + params.r_sym.code().to_string() + " " 
+        //     + params.r_to.to_string();
+
+        // check(false, msg);
+    }
+
+    //initialize
+    uint16_t remaining_execs = 1;
+
+    //if total execs provided
+    if (total_execs) {
+        remaining_execs = *total_execs;
+    } 
+
+    //emplace new trigger
+    //ram payer: contract
+    triggers.emplace(get_self(), [&](auto& col) {
+        col.behavior_name = behavior_name;
+        col.trx_payload = trx_payload;
+        col.remaining_execs = remaining_execs;
+        col.primed = true;
+        col.auto_prime = true;
+        col.auto_erase = true;
     });
 
-    //send inline eosio.token::transfer to withdrawing account
-    //auth: self
-    action(permission_level{get_self(), name("active")}, name("eosio.token"), name("transfer"), make_tuple(
-        get_self(), //from
-        account_owner, //to
-        amount, //quantity
-        std::string("Marble Account Withdrawal") //memo
-    )).send();
 }
 
-//======================== notification handlers ========================
+ACTION marble::exectrigger(uint64_t serial, name behavior_name) {
+    //authenticate
+    require_auth(get_self());
+    
+    //open items table, get item
+    items_table items(get_self(), get_self().value);
+    auto& itm = items.get(serial, "item not found");
 
-void marble::catch_transfer(name from, name to, asset quantity, string memo) {
-    //get initial receiver contract
-    name rec = get_first_receiver();
+    //open triggers table, get trigger
+    triggers_table triggers(get_self(), serial);
+    auto& trig = triggers.get(behavior_name.value, "trigger not found");
 
-    //if received notification from eosio.token, not from self, and symbol is TLOS
-    if (rec == name("eosio.token") && from != get_self() && quantity.symbol == CORE_SYM) {
-        //if memo is "deposit"
-        if (memo == std::string("deposit")) { 
-            //open accounts table, search for account
-            accounts_table accounts(get_self(), from.value);
-            auto acct_itr = accounts.find(CORE_SYM.code().raw());
+    //validate
+    check(trig.remaining_execs > 0, "no remaining trigger executions");
+    check(trig.primed, "trigger not primed");
 
-            //if account found
-            if (acct_itr != accounts.end()) {
-                //add to existing account
-                accounts.modify(*acct_itr, same_payer, [&](auto& col) {
-                    col.balance += quantity;
-                });
-            } else {
-                //create new account
-                //ram payer: contract
-                accounts.emplace(get_self(), [&](auto& col) {
-                    col.balance = quantity;
-                });
-            }
-        }
+    //TODO: compare trigger condition
+
+    //initialize
+    transaction_header trx_header;
+    vector<action> context_free_actions;
+    vector<action> actions;
+    datastream<const char*> ds(trig.trx_payload.data(), trig.trx_payload.size());
+
+    //read from datastream
+    ds >> trx_header;
+    ds >> context_free_actions;
+    ds >> actions;
+
+    //validate
+    check(trx_header.expiration >= time_point_sec(current_time_point()), "transaction expired");
+    check(context_free_actions.empty(), "not allowed to exec a trigger with context-free actions");
+
+    //authenticate
+    // check(would_authenticate());
+
+    //if last remaining exec and auto_erase is true
+    if (trig.remaining_execs == 1 && trig.auto_erase) {
+        //erase trigger
+        triggers.erase(trig);
+    } else {
+        //update trigger
+        triggers.modify(trig, same_payer, [&](auto& col) {
+            col.remaining_execs -= 1;
+            col.primed = trig.auto_prime;
+        });
     }
+
+    //send all actions in trx as inlines
+    for (const auto& act : actions) {
+        act.send();
+    }
+
 }
 
 //======================== frame actions ========================
@@ -1326,4 +1404,94 @@ ACTION marble::rmvframe(name frame_name, string memo) {
     //erase frame
     frames.erase(frm);
 
+}
+
+//======================== account actions ========================
+
+ACTION marble::withdraw(name account_owner, asset amount) {
+    //validate
+    check(amount.symbol == CORE_SYM, "can only withdraw core token");
+    
+    //authenticate
+    require_auth(account_owner);
+
+    //open accounts table, get deposit
+    accounts_table accounts(get_self(), account_owner.value);
+    auto& acct = accounts.get(amount.symbol.code().raw(), "account not found");
+
+    //validate
+    check(amount.amount > 0, "must withdraw a positive amount");
+    check(acct.balance >= amount, "insufficient funds");
+
+    //update account balance
+    accounts.modify(acct, same_payer, [&](auto& col) {
+        col.balance -= amount;
+    });
+
+    //send inline eosio.token::transfer to withdrawing account
+    //auth: self
+    action(permission_level{get_self(), name("active")}, name("eosio.token"), name("transfer"), make_tuple(
+        get_self(), //from
+        account_owner, //to
+        amount, //quantity
+        std::string("Marble Account Withdrawal") //memo
+    )).send();
+}
+
+//======================== notification handlers ========================
+
+void marble::catch_transfer(name from, name to, asset quantity, string memo) {
+    //get initial receiver contract
+    name rec = get_first_receiver();
+
+    //if received notification from eosio.token, not from self, and symbol is TLOS
+    if (rec == name("eosio.token") && from != get_self() && quantity.symbol == CORE_SYM) {
+        //if memo is "deposit"
+        if (memo == std::string("deposit")) { 
+            //open accounts table, search for account
+            accounts_table accounts(get_self(), from.value);
+            auto acct_itr = accounts.find(CORE_SYM.code().raw());
+
+            //if account found
+            if (acct_itr != accounts.end()) {
+                //add to existing account
+                accounts.modify(*acct_itr, same_payer, [&](auto& col) {
+                    col.balance += quantity;
+                });
+            } else {
+                //create new account
+                //ram payer: contract
+                accounts.emplace(get_self(), [&](auto& col) {
+                    col.balance = quantity;
+                });
+            }
+        }
+    }
+}
+
+//======================== contract functions ========================
+
+bool marble::has_trigger(uint64_t serial, name behavior_name) {
+    //open triggers table, get trigger
+    triggers_table triggers(get_self(), serial);
+    auto trig_itr = triggers.find(behavior_name.value);
+
+    //if trigger found
+    if (trig_itr != triggers.end()) {
+        return true;
+    }
+
+    return false;
+}
+
+bool marble::allowed_trigger_action(name action_name) {
+    //return true if action is allowed in a trigger
+    switch (action_name.value) {
+        case (name("release").value):
+            return true;
+            break;
+        default:
+            return false;
+            break;
+    }
 }

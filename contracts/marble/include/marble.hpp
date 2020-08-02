@@ -7,6 +7,7 @@
 
 #include <eosio/eosio.hpp>
 #include <eosio/action.hpp>
+#include <eosio/transaction.hpp>
 #include <eosio/singleton.hpp>
 #include <eosio/asset.hpp>
 
@@ -33,6 +34,16 @@ CONTRACT marble : public contract {
     const name ACTIVATE = name("activate");
     const name CONSUME = name("consume");
     const name DESTROY = name("destroy");
+
+    //enumerations
+    enum comparators : uint8_t {
+        LESS_THAN, //0
+        GREATER_THAN, //1
+        EQUAL_TO, //2
+        NOT_EQUAL_TO, //3
+        LESS_THAN_EQUAL_TO, //4
+        GREATER_THAN_EQUAL_TO //5
+    };
 
     //======================== admin actions ========================
 
@@ -220,7 +231,7 @@ CONTRACT marble : public contract {
 
     //create a new trigger for an item to be executed on behavior calls
     //auth: manager
-    // ACTION newtrigger(uint64_t serial, name behavior_name, name action_name, vector<char> action_payload, optional<uint16_t> total_execs);
+    ACTION newtrigger(uint64_t serial, name behavior_name, vector<char> trx_payload, optional<uint16_t> total_execs);
 
     //toggle primed state of trigger on/off
     //auth: manager
@@ -228,7 +239,7 @@ CONTRACT marble : public contract {
 
     //execute a trigger
     //auth: contract
-    // ACTION exectrigger(uint64_t serial, name behavior_name);
+    ACTION exectrigger(uint64_t serial, name behavior_name);
 
     //remove a trigger form an item
     //auth: manager
@@ -245,6 +256,27 @@ CONTRACT marble : public contract {
     //catch a transfer from eosio.token
     [[eosio::on_notify("eosio.token::transfer")]]
     void catch_transfer(name from, name to, asset quantity, string memo);
+
+    //======================== contract functions ========================
+
+    // struct release_params {
+    //     uint64_t r_serial;
+    //     symbol r_sym;
+    //     name r_to;
+    //     EOSLIB_SERIALIZE(release_params, (r_serial)(r_sym)(r_to))
+    // };
+
+    //returns true if trigger exists for behavior
+    bool has_trigger(uint64_t serial, name behavior_name);
+
+    //returns true if action is allowed in trigger payload
+    bool allowed_trigger_action(name action_name);
+
+    //returns true if an account name would be authenticated when sending the action
+    // bool would_authenticate(name account_name, name action_name);
+
+    //clears all properties on an item
+    // void clear_props(uint64_t serial);
 
     //======================== contract tables ========================
 
@@ -345,6 +377,8 @@ CONTRACT marble : public contract {
         map<name, string> default_tags; //tag_name => default content
         map<name, int64_t> default_attributes; //attribute_name => default value
         // map<name, time_point_sec> default_events; //event_name => default value
+        // map<symbol, asset> default_backings; //token_symbol => backing_amount
+        // map<name, vector<char>> default_triggers; //behavior_name => trx_payload
 
         uint64_t primary_key() const { return frame_name.value; }
         uint64_t by_group() const { return group.value; }
@@ -358,10 +392,11 @@ CONTRACT marble : public contract {
     //scope: serial
     TABLE backing {
         asset backing_amount; //amount stored by backing
-        // name release_acct;
-        name release_auth; //account name that can authorize release (self for triggers)
+        // name release_acct; //account that can authorize release (self for triggers)
+        name release_auth; //permission that can authorize release (triggers for triggers)
+        // name release_to; //account that backing will be released to (if blank release to item owner)
         asset per_release; //amount released from backing per release call
-        bool locked; //if true backing cannot be released
+        bool locked; //if true backing settings cannot be changed
 
         uint64_t primary_key() const { return backing_amount.symbol.code().raw(); }
         EOSLIB_SERIALIZE(backing, (backing_amount)(release_auth)(per_release)(locked))
@@ -370,24 +405,26 @@ CONTRACT marble : public contract {
 
     //triggers table
     //scope: serial
-    // TABLE trigger {
-    //     name behavior_name; //behavior that executes trigger
+    TABLE trigger {
+        name behavior_name; //behavior that executes trigger
 
-    //     // pair<char, char> comparator; //<, >, ==, !=, <=, >= (LESS_THAN, GREATER_THAN, EQUAL_TO, NOT_EUQAL_TO, LESS_THAN_EQUAL_TO, GREATER_THAN_EQUAL_TO)
-    //     // variant<string, int64_t, time_point_sec, asset> conditions; //item values to compare before execution
+        // uint8_t comparator; //LESS_THAN, GREATER_THAN, EQUAL_TO, NOT_EQUAL_TO, LESS_THAN_EQUAL_TO, GREATER_THAN_EQUAL_TO
+        // string condition_type; //"string", "int64_t", "time_point_sec", "asset"
+        // variant<string, int64_t, time_point_sec, asset> condition; //item values to compare before execution
 
-    //     name action_name; //name of action to execute as inline
-    //     vector<char> action_payload; //action payload as packed data
+        vector<char> trx_payload; //transaction payload as packed data
+        // vector<permission_level> approvals; //transaction payload approvals
+        uint16_t remaining_execs; //decrements upon trigger execution
+        bool primed; //if true will execute when triggered, if false will ignore
+        bool auto_prime; //automatically primes trigger again after execution
+        bool auto_erase; //erases trigger after remaining_execs reach zero
+        bool locked; //lock trigger to prevent changes
 
-    //     bool primed; //if true will execute when triggered, if false will ignore
-    //     uint16_t remaining_execs; //decrements upon trigger execution
-    //     bool auto_prime; //automatically primes trigger again after execution
-    //     bool auto_erase; //erases trigger after remaining_execs reach zero
-
-    //     uint64_t primary_key() const { return behavior_name.value; }
-    //     EOSLIB_SERIALIZE(trigger, (behavior_name))
-    // };
-    // typedef multi_index<name("triggers"), trigger> triggers_table;
+        uint64_t primary_key() const { return behavior_name.value; }
+        EOSLIB_SERIALIZE(trigger, (behavior_name)(trx_payload)(remaining_execs)
+            (primed)(auto_prime)(auto_erase)(locked))
+    };
+    typedef multi_index<name("triggers"), trigger> triggers_table;
 
     //accounts table
     //scope: account
