@@ -1109,8 +1109,6 @@ ACTION marble::exectrigger(uint64_t serial, name behavior_name) {
     check(trig.remaining_execs > 0, "no remaining trigger executions");
     check(trig.primed, "trigger not primed");
 
-    //TODO: compare trigger condition
-
     //initialize
     transaction_header trx_header;
     vector<action> context_free_actions;
@@ -1516,6 +1514,61 @@ bool marble::allowed_trigger_action(name action_name) {
             return true;
             break;
         default:
+            return false;
+            break;
+    }
+}
+
+ACTION marble::testcond() {
+    variant<string, int64_t, time_point_sec> vnt = int64_t(5);
+    // int var_idx = 1;
+
+    auto rhs = std::get<1>(vnt);
+
+    // auto rhs = get_trigger_operand(var_idx, vnt);
+
+    bool res = evaluate_trigger_condition(2, 0, 3);
+
+    check(false, "evaluated: " + to_string(res) );
+}
+
+// template<typename T>
+// T marble::get_property_operand(T property_operand)
+// {
+
+// }
+
+// template<typename T>
+// T marble::get_trigger_operand(variant<string, int64_t, time_point_sec> trigger_variant)
+// {
+//     T trig_op = std::get<T>(trigger_variant);
+//     return trig_op;
+// }
+
+template<typename L, typename R>
+bool marble::evaluate_trigger_condition(L lhs_operand, uint8_t comparator, R rhs_operand)
+{
+    switch (comparator) {
+        case LESS_THAN :
+            return (lhs_operand < rhs_operand) ? true : false;
+            break;
+        case GREATER_THAN :
+            return (lhs_operand > rhs_operand) ? true : false;
+            break;
+        case EQUAL_TO :
+            return (lhs_operand == rhs_operand) ? true : false;
+            break;
+        case NOT_EQUAL_TO :
+            return (lhs_operand != rhs_operand) ? true : false;
+            break;
+        case LESS_THAN_EQUAL_TO :
+            return (lhs_operand <= rhs_operand) ? true : false;
+            break;
+        case GREATER_THAN_EQUAL_TO :
+            return (lhs_operand >= rhs_operand) ? true : false;
+            break;
+        default:
+            check(false, "invalid comparator");
             return false;
             break;
     }

@@ -282,6 +282,19 @@ CONTRACT marble : public contract {
     //clears all properties on an item
     // void clear_props(uint64_t serial);
 
+    //returns true if a trigger condition evaluates to true
+
+    // template<typename T>
+    // T get_trigger_operand(T variant_type, variant<string, int64_t, time_point_sec> trigger_variant);
+
+    template<typename L, typename R>
+    bool evaluate_trigger_condition(L lhs_operand, uint8_t comparator, R rhs_operand);
+
+    ACTION testcond();
+
+    //returns string from variant
+    // string string_from_variant(variant<string, int64_t, time_point_sec, asset>);
+
     //======================== contract tables ========================
 
     //config table
@@ -328,6 +341,8 @@ CONTRACT marble : public contract {
         uint64_t serial;
         name group;
         name owner;
+        //uint32_t group_number;
+
         uint64_t primary_key() const { return serial; }
         uint64_t by_group() const { return group.value; }
         uint64_t by_owner() const { return owner.value; }
@@ -411,11 +426,9 @@ CONTRACT marble : public contract {
     //scope: serial
     TABLE trigger {
         name behavior_name; //behavior that executes trigger
-
         // uint8_t comparator; //LESS_THAN, GREATER_THAN, EQUAL_TO, NOT_EQUAL_TO, LESS_THAN_EQUAL_TO, GREATER_THAN_EQUAL_TO
-        // string condition_type; //"string", "int64_t", "time_point_sec", "asset"
+        // uint8_t variant_idx; //saves type stored in variant for use at compile time
         // variant<string, int64_t, time_point_sec, asset> condition; //item values to compare before execution
-
         vector<char> trx_payload; //transaction payload as packed data
         // vector<permission_level> approvals; //transaction payload approvals
         uint16_t remaining_execs; //decrements upon trigger execution
