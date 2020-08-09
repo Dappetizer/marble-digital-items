@@ -956,6 +956,9 @@ ACTION marble::addtobacking(uint64_t serial, asset amount)
     backings_table backings(get_self(), serial);
     auto& back = backings.get(amount.symbol.code().raw(), "backing not found");
 
+    //validate
+    check(!back.locked, "backing cannot be modified if locked");
+
     //update backing
     backings.modify(back, same_payer, [&](auto& col) {
         col.backed_amount += amount;
