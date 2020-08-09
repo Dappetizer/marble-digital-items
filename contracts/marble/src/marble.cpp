@@ -822,7 +822,7 @@ ACTION marble::seteventtime(uint64_t serial, name event_name, time_point_sec new
 
     //modify event
     events.modify(evnt, same_payer, [&](auto& col) {
-        col.event_time += new_event_time;
+        col.event_time = new_event_time;
     });
 }
 
