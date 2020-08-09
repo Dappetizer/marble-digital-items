@@ -75,7 +75,7 @@ icon: https://github.com/Telos-Foundation/images/raw/master/ricardian_assets/eos
 
 Add the {{behavior_name}} behavior to the {{group_name}} group.
 
-<h1 class="contract">toggle</h1>
+<h1 class="contract">togglebhvr</h1>
 
 ---
 spec_version: "0.2.0"
@@ -394,16 +394,16 @@ icon: https://github.com/Telos-Foundation/images/raw/master/ricardian_assets/eos
 
 Release item backing.
 
-<h1 class="contract">releaseall</h1>
+<h1 class="contract">lockbacking</h1>
 
 ---
 spec_version: "0.2.0"
-title: Release All
-summary: 'Release All Backings'
+title: Lock Backing
+summary: 'Lock Backing Settings'
 icon: https://github.com/Telos-Foundation/images/raw/master/ricardian_assets/eosio.contracts/icons/admin.png#9bf1cec664863bd6aaac0f814b235f8799fb02c850e9aa5da34e8a004bd6518e
 ---
 
-Release all backings on item serial {{serial}}.
+Lock backing settings.
 
 <h1 class="contract">withdraw</h1>
 

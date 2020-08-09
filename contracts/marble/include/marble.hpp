@@ -1,9 +1,9 @@
-// Marble is a modular digital item format for EOSIO software.
+// Marble is a Digital Item format for EOSIO software.
 //
 // author: Craig Branscom
 // company: Dappetizer, LLC
 // contract: marble
-// version: v1.1.0
+// version: v1.0.0
 
 #include <eosio/eosio.hpp>
 #include <eosio/action.hpp>
@@ -16,7 +16,6 @@ using namespace eosio;
 //TODO: reclaim, freeze, update, release
 //TODO: create release perm, linkauth to releaseall() action
 //TODO: add core_symbol to config table
-//TODO: create_or_update_account() function
 //TODO?: add string payload_json to trigger
 
 CONTRACT marble : public contract {
@@ -70,7 +69,7 @@ CONTRACT marble : public contract {
 
     //toggle a behavior on/off
     //auth: manager
-    ACTION toggle(name group_name, name behavior_name);
+    ACTION togglebhvr(name group_name, name behavior_name);
 
     //lock a behavior to prevent mutations
     //auth: manager
@@ -202,37 +201,19 @@ CONTRACT marble : public contract {
 
     //back an item with a fungible token (draws from manager deposit balance)
     //auth: manager
-    ACTION newbacking(uint64_t serial, asset amount, optional<name> release_auth, optional<asset> per_release);
+    ACTION newbacking(uint64_t serial, asset amount, optional<name> release_event, optional<name> release_to);
 
     //release configured amount from item backing
     //auth: release_auth
-    ACTION release(uint64_t serial, symbol token_symbol, name release_to);
+    ACTION release(uint64_t serial, symbol token_symbol);
 
     //release all backings from an item
     //auth: release_auth
     // ACTION releaseall(uint64_t serial, name release_to);
 
-    //locks a backing to prevent release
+    //locks a backing to prevent settings changes
     //auth: manager
-    // ACTION lockbacking(uint64_t serial, symbol token_symbol);
-
-    //======================== trigger actions ========================
-
-    //create a new trigger for an item to be executed on behavior calls
-    //auth: manager
-    // ACTION newtrigger(uint64_t serial, name behavior_name, name action_name, vector<char> action_payload, optional<uint16_t> total_execs);
-
-    //toggle primed state of trigger on/off
-    //auth: manager
-    // ACTION toggleprimed(uint64_t serial, name behavior_name);
-
-    //execute a trigger
-    //auth: contract
-    // ACTION exectrigger(uint64_t serial, name behavior_name);
-
-    //remove a trigger form an item
-    //auth: manager
-    // ACTION rmvtrigger(uint64_t serial, name behavior_name);
+    ACTION lockbacking(uint64_t serial, symbol token_symbol);
 
     //======================== account actions ========================
 
@@ -357,37 +338,22 @@ CONTRACT marble : public contract {
     //backings table
     //scope: serial
     TABLE backing {
-        asset backing_amount; //amount stored by backing
-        // name release_acct;
-        name release_auth; //account name that can authorize release (self for triggers)
-        asset per_release; //amount released from backing per release call
-        bool locked; //if true backing cannot be released
+        asset backed_amount; //token amount stored by backing
+        name release_event; //event name storing release time (blank for no release time, will release when burned or consumed)
+        name release_to; //account to release backing to (blank for item owner)
+        bool locked; //if true backing settings cannot be changed
 
-        uint64_t primary_key() const { return backing_amount.symbol.code().raw(); }
-        EOSLIB_SERIALIZE(backing, (backing_amount)(release_auth)(per_release)(locked))
+        // name release_style; //timed, steps, linear, auth, bhvr
+        // name release_acct; //account name that can authorize release (self for triggers)
+        // name release_perm; //permission name that can authorize release (triggers for triggers)
+        // uint8_t release_steps; //number of equal-length release durations
+        // uint32_t step_duration; //length of time for each step in seconds
+        // asset per_release; //amount released from backing per release call
+
+        uint64_t primary_key() const { return backed_amount.symbol.code().raw(); }
+        EOSLIB_SERIALIZE(backing, (backed_amount)(release_event)(release_to)(locked))
     };
     typedef multi_index<name("backings"), backing> backings_table;
-
-    //triggers table
-    //scope: serial
-    // TABLE trigger {
-    //     name behavior_name; //behavior that executes trigger
-
-    //     // pair<char, char> comparator; //<, >, ==, !=, <=, >= (LESS_THAN, GREATER_THAN, EQUAL_TO, NOT_EUQAL_TO, LESS_THAN_EQUAL_TO, GREATER_THAN_EQUAL_TO)
-    //     // variant<string, int64_t, time_point_sec, asset> conditions; //item values to compare before execution
-
-    //     name action_name; //name of action to execute as inline
-    //     vector<char> action_payload; //action payload as packed data
-
-    //     bool primed; //if true will execute when triggered, if false will ignore
-    //     uint16_t remaining_execs; //decrements upon trigger execution
-    //     bool auto_prime; //automatically primes trigger again after execution
-    //     bool auto_erase; //erases trigger after remaining_execs reach zero
-
-    //     uint64_t primary_key() const { return behavior_name.value; }
-    //     EOSLIB_SERIALIZE(trigger, (behavior_name))
-    // };
-    // typedef multi_index<name("triggers"), trigger> triggers_table;
 
     //accounts table
     //scope: account
