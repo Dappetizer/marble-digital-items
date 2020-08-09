@@ -912,6 +912,16 @@ ACTION marble::newbacking(uint64_t serial, asset amount, optional<name> release_
     name backing_release_event = (release_event) ? *release_event : name(0);
     name backing_release_to = (release_to) ? *release_to : name(0);
 
+    //if release event not blank
+    if (backing_release_event != name(0)) {
+        //open events table, get event
+        events_table events(get_self(), serial);
+        auto& evnt = events.get(backing_release_event.value, "release event not found");
+
+        //validate
+        check(evnt.event_time > time_point_sec(current_time_point()), "release event time must be in the future");
+    }
+
     //if backing not found
     if (back_itr == backings.end()) {
         //emplace new backing
