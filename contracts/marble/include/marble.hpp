@@ -201,11 +201,15 @@ CONTRACT marble : public contract {
 
     //back an item with a fungible token (draws from manager deposit balance)
     //auth: manager
-    ACTION newbacking(uint64_t serial, asset amount, optional<name> release_event, optional<name> release_to);
+    ACTION newbacking(uint64_t serial, asset amount, optional<name> release_event);
+
+    //add more tokens to an existing backing
+    //auth: manager
+    ACTION addtobacking(uint64_t serial, asset amount);
 
     //release configured amount from item backing
     //auth: release_auth
-    ACTION release(uint64_t serial, symbol token_symbol);
+    ACTION release(uint64_t serial, name release_to);
 
     //release all backings from an item
     //auth: release_auth
@@ -213,7 +217,7 @@ CONTRACT marble : public contract {
 
     //locks a backing to prevent settings changes
     //auth: manager
-    ACTION lockbacking(uint64_t serial, symbol token_symbol);
+    ACTION lockbacking(uint64_t serial);
 
     //======================== account actions ========================
 
@@ -340,7 +344,6 @@ CONTRACT marble : public contract {
     TABLE backing {
         asset backed_amount; //token amount stored by backing
         name release_event; //event name storing release time (blank for no release time, will release when burned or consumed)
-        name release_to; //account to release backing to (blank for item owner)
         bool locked; //if true backing settings cannot be changed
 
         // name release_style; //timed, steps, linear, auth, bhvr
@@ -349,9 +352,10 @@ CONTRACT marble : public contract {
         // uint8_t release_steps; //number of equal-length release durations
         // uint32_t step_duration; //length of time for each step in seconds
         // asset per_release; //amount released from backing per release call
+        // name release_to; //account to release backing to (blank for item owner)
 
         uint64_t primary_key() const { return backed_amount.symbol.code().raw(); }
-        EOSLIB_SERIALIZE(backing, (backed_amount)(release_event)(release_to)(locked))
+        EOSLIB_SERIALIZE(backing, (backed_amount)(release_event)(locked))
     };
     typedef multi_index<name("backings"), backing> backings_table;
 
