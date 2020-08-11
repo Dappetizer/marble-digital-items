@@ -94,6 +94,7 @@ CONTRACT marble : public contract {
     ACTION activateitem(uint64_t serial);
 
     //consume an item
+    //post: inline releaseall() if bond(s) exist
     //auth: owner
     ACTION consumeitem(uint64_t serial);
 
@@ -102,6 +103,7 @@ CONTRACT marble : public contract {
     // ACTION reclaimitem(uint64_t serial);
 
     //destroy an item
+    //post: inline releaseall() if bond(s) exist
     //auth: manager
     ACTION destroyitem(uint64_t serial, string memo);
 
@@ -197,31 +199,31 @@ CONTRACT marble : public contract {
     //auth: manager
     ACTION rmvframe(name frame_name, string memo);
 
-    //======================== backing actions ========================
+    //======================== bond actions ========================
 
     //back an item with a fungible token (draws from manager deposit balance)
     //auth: manager
-    ACTION newbacking(uint64_t serial, asset amount, optional<name> release_event);
+    ACTION newbond(uint64_t serial, asset amount, optional<name> release_event);
 
-    //add more tokens to an existing backing
-    //pre: backing exists
+    //add more tokens to an existing bond
+    //pre: bond exists, bond not locked
     //auth: manager
-    ACTION addtobacking(uint64_t serial, asset amount);
+    ACTION addtobond(uint64_t serial, asset amount);
 
-    //release configured amount from item backing
+    //release preconfigured amount from item bond
     //pre: item exists, release conditions met
     //auth: item owner
     ACTION release(uint64_t serial);
 
-    //release all backings from an item
-    //pre: item consumed or destroyed
+    //release all bond amounts from an item
+    //pre: item consumed or destroyed, release_to == item.owner
     //auth: contract (inline)
     ACTION releaseall(uint64_t serial, name release_to);
 
-    //locks a backing to prevent settings changes
-    //pre: backing not locked
+    //locks a bond to prevent settings changes
+    //pre: bond not locked
     //auth: manager
-    ACTION lockbacking(uint64_t serial);
+    ACTION lockbond(uint64_t serial);
 
     //======================== account actions ========================
 
@@ -343,20 +345,20 @@ CONTRACT marble : public contract {
         indexed_by<"bygroup"_n, const_mem_fun<frame, uint64_t, &frame::by_group>>
     > frames_table;
 
-    //backings table
+    //bonds table
     //scope: serial
-    TABLE backing {
-        asset backed_amount; //token amount stored by backing
+    TABLE bond {
+        asset backed_amount; //token amount stored by bond
         name release_event; //event name storing release time (blank for no release time)
-        bool locked; //if true backing settings cannot be changed
+        bool locked; //if true bond settings cannot be changed
 
         // uint16_t steps; //number of release steps before maturity
-        // asset per_step; //amount released from backing per step
+        // asset per_step; //amount released from bond per step
 
         uint64_t primary_key() const { return backed_amount.symbol.code().raw(); }
-        EOSLIB_SERIALIZE(backing, (backed_amount)(release_event)(locked))
+        EOSLIB_SERIALIZE(bond, (backed_amount)(release_event)(locked))
     };
-    typedef multi_index<name("backings"), backing> backings_table;
+    typedef multi_index<name("bonds"), bond> bonds_table;
 
     //accounts table
     //scope: account

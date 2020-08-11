@@ -385,12 +385,12 @@ ACTION marble::consumeitem(uint64_t serial)
     check(bhvr.state, "item is not consumable");
     check(grp.supply > 0, "cannot reduce supply below zero");
 
-    //open backings table, find backing
-    backings_table backings(get_self(), serial);
-    auto back_itr = backings.find(CORE_SYM.code().raw());
+    //open bonds table, find bond
+    bonds_table bonds(get_self(), serial);
+    auto bond_itr = bonds.find(CORE_SYM.code().raw());
 
-    //if backing found
-    if (back_itr != backings.end()) {
+    //if bond found
+    if (bond_itr != bonds.end()) {
         //send inline marble::releaseall to self
         //auth: self
         action(permission_level{get_self(), name("active")}, get_self(), name("releaseall"), make_tuple(
@@ -429,12 +429,12 @@ ACTION marble::destroyitem(uint64_t serial, string memo)
     check(bhvr.state, "item is not destroyable");
     check(grp.supply > 0, "cannot reduce supply below zero");
 
-    //open backings table, find backing
-    backings_table backings(get_self(), serial);
-    auto back_itr = backings.find(CORE_SYM.code().raw());
+    //open bonds table, find bond
+    bonds_table bonds(get_self(), serial);
+    auto bond_itr = bonds.find(CORE_SYM.code().raw());
 
-    //if backing found
-    if (back_itr != backings.end()) {
+    //if bond found
+    if (bond_itr != bonds.end()) {
         //send inline marble::releaseall to self
         //auth: self
         action(permission_level{get_self(), name("active")}, get_self(), name("releaseall"), make_tuple(
@@ -863,9 +863,9 @@ ACTION marble::rmvevent(uint64_t serial, name event_name)
     events.erase(evnt);
 }
 
-//======================== backing actions ========================
+//======================== bond actions ========================
 
-ACTION marble::newbacking(uint64_t serial, asset amount, optional<name> release_event)
+ACTION marble::newbond(uint64_t serial, asset amount, optional<name> release_event)
 {
     //validate
     check(amount.symbol == CORE_SYM, "asset must be core symbol");
@@ -894,36 +894,36 @@ ACTION marble::newbacking(uint64_t serial, asset amount, optional<name> release_
         col.balance -= amount;
     });
 
-    //open backings table, search for backing
-    backings_table backings(get_self(), serial);
-    auto back_itr = backings.find(amount.symbol.code().raw());
+    //open bonds table, search for bond
+    bonds_table bonds(get_self(), serial);
+    auto bond_itr = bonds.find(amount.symbol.code().raw());
 
     //validate
-    check(back_itr == backings.end(), "backing already exists");
+    check(bond_itr == bonds.end(), "bond already exists");
 
     //initialize
-    name backing_release_event = (release_event) ? *release_event : name(0);
+    name bond_release_event = (release_event) ? *release_event : name(0);
 
     //if release event not blank
-    if (backing_release_event != name(0)) {
+    if (bond_release_event != name(0)) {
         //open events table, get event
         events_table events(get_self(), serial);
-        auto& evnt = events.get(backing_release_event.value, "release event not found");
+        auto& evnt = events.get(bond_release_event.value, "release event not found");
 
         //validate
         check(evnt.event_time > time_point_sec(current_time_point()), "release event time must be in the future");
     }
 
-    //emplace new backing
+    //emplace new bond
     //ram payer: contract
-    backings.emplace(get_self(), [&](auto& col) {
+    bonds.emplace(get_self(), [&](auto& col) {
         col.backed_amount = amount;
-        col.release_event = backing_release_event;
+        col.release_event = bond_release_event;
         col.locked = false;
     });
 }
 
-ACTION marble::addtobacking(uint64_t serial, asset amount)
+ACTION marble::addtobond(uint64_t serial, asset amount)
 {
     //validate
     check(amount.symbol == CORE_SYM, "asset must be core symbol");
@@ -952,15 +952,15 @@ ACTION marble::addtobacking(uint64_t serial, asset amount)
         col.balance -= amount;
     });
 
-    //open backings table, search for backing
-    backings_table backings(get_self(), serial);
-    auto& back = backings.get(amount.symbol.code().raw(), "backing not found");
+    //open bonds table, search for bond
+    bonds_table bonds(get_self(), serial);
+    auto& bnd = bonds.get(amount.symbol.code().raw(), "bond not found");
 
     //validate
-    check(!back.locked, "backing cannot be modified if locked");
+    check(!bnd.locked, "bond cannot be modified if locked");
 
-    //update backing
-    backings.modify(back, same_payer, [&](auto& col) {
+    //update bond
+    bonds.modify(bnd, same_payer, [&](auto& col) {
         col.backed_amount += amount;
     });
 }
@@ -974,22 +974,22 @@ ACTION marble::release(uint64_t serial)
     //authenticate
     require_auth(itm.owner);
 
-    //open backings table, get backing
-    backings_table backings(get_self(), serial);
-    auto& back = backings.get(CORE_SYM.code().raw(), "backing not found");
+    //open bonds table, get bond
+    bonds_table bonds(get_self(), serial);
+    auto& bnd = bonds.get(CORE_SYM.code().raw(), "bond not found");
 
     //validate
-    check(back.release_event != name(0), "backing must have a release event to manually release");
+    check(bnd.release_event != name(0), "bond must have a release event to manually release");
 
     //initialize
     time_point_sec now = time_point_sec(current_time_point());
 
     //open events table, get event
     events_table events(get_self(), serial);
-    auto& evnt = events.get(back.release_event.value, "event not found");
+    auto& evnt = events.get(bnd.release_event.value, "event not found");
 
     //validate
-    check(now >= evnt.event_time, "backing can only be released after release event time");
+    check(now >= evnt.event_time, "bond can only be released after release event time");
 
     //open accounts table, search for account
     accounts_table accounts(get_self(), itm.owner.value);
@@ -999,18 +999,18 @@ ACTION marble::release(uint64_t serial)
     if (acct_itr != accounts.end()) {
         //add to existing account
         accounts.modify(*acct_itr, same_payer, [&](auto& col) {
-            col.balance += back.backed_amount;
+            col.balance += bnd.backed_amount;
         });
     } else {
         //create new account
         //ram payer: contract
         accounts.emplace(get_self(), [&](auto& col) {
-            col.balance = back.backed_amount;
+            col.balance = bnd.backed_amount;
         });
     }
 
-    //erase backing
-    backings.erase(back);
+    //erase bond
+    bonds.erase(bnd);
 }
 
 ACTION marble::releaseall(uint64_t serial, name release_to)
@@ -1019,9 +1019,9 @@ ACTION marble::releaseall(uint64_t serial, name release_to)
     // require_auth(permission_level{get_self(), name("releases")});
     require_auth(get_self());
 
-    //open backings table, get backing
-    backings_table backings(get_self(), serial);
-    auto& back = backings.get(CORE_SYM.code().raw(), "backing not found");
+    //open bonds table, get bond
+    bonds_table bonds(get_self(), serial);
+    auto& bnd = bonds.get(CORE_SYM.code().raw(), "bond not found");
 
     //open accounts table, search for account
     accounts_table accounts(get_self(), release_to.value);
@@ -1031,21 +1031,21 @@ ACTION marble::releaseall(uint64_t serial, name release_to)
     if (acct_itr != accounts.end()) {
         //add to existing account
         accounts.modify(*acct_itr, same_payer, [&](auto& col) {
-            col.balance += back.backed_amount;
+            col.balance += bnd.backed_amount;
         });
     } else {
         //create new account
         //ram payer: contract
         accounts.emplace(get_self(), [&](auto& col) {
-            col.balance = back.backed_amount;
+            col.balance = bnd.backed_amount;
         });
     }
 
-    //erase backing
-    backings.erase(back);
+    //erase bond
+    bonds.erase(bnd);
 }
 
-ACTION marble::lockbacking(uint64_t serial)
+ACTION marble::lockbond(uint64_t serial)
 {
     //open items table, get item
     items_table items(get_self(), get_self().value);
@@ -1058,15 +1058,15 @@ ACTION marble::lockbacking(uint64_t serial)
     //authenticate
     require_auth(grp.manager);
 
-    //open backings table, get backing
-    backings_table backings(get_self(), serial);
-    auto& back = backings.get(CORE_SYM.code().raw(), "backing not found");
+    //open bonds table, get bond
+    bonds_table bonds(get_self(), serial);
+    auto& bnd = bonds.get(CORE_SYM.code().raw(), "bond not found");
 
     //validate
-    check(!back.locked, "backing is already locked");
+    check(!bnd.locked, "bond is already locked");
 
-    //update backing
-    backings.modify(back, same_payer, [&](auto& col) {
+    //update bond
+    bonds.modify(bnd, same_payer, [&](auto& col) {
         col.locked = true;
     });
 }
