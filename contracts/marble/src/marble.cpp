@@ -98,6 +98,7 @@ ACTION marble::newgroup(string title, string description, name group_name, name 
     initial_behaviors["mint"_n] = true;
     initial_behaviors["transfer"_n] = true;
     initial_behaviors["activate"_n] = false;
+    initial_behavrors["reclaim"_n] = false;
     initial_behaviors["consume"_n] = false;
     initial_behaviors["destroy"_n] = true;
 
