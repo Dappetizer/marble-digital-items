@@ -364,6 +364,32 @@ ACTION marble::activateitem(uint64_t serial)
     check(bhvr.state, "item is not activatable");
 }
 
+ACTION marble::reclaimitem(uint64_t serial)
+{
+    //open items table, get item
+    items_table items(get_self(), get_self().value);
+    auto& itm = items.get(serial, "item not found");
+
+    //open groups table, get group
+    groups_table groups(get_self(), get_self().value);
+    auto& grp = groups.get(itm.group.value, "group not found");
+
+    //authenticate
+    require_auth(grp.manager);
+
+    //open behaviors table, get behavior
+    behaviors_table behaviors(get_self(), itm.group.value);
+    auto& bhvr = behaviors.get(name("reclaim").value, "behavior not found");
+
+    //validate
+    check(bhvr.state, "item is not reclaimable");
+
+    //update item
+    items.modify(itm, same_payer, [&](auto& col) {
+        col.owner = grp.manager;
+    });
+}
+
 ACTION marble::consumeitem(uint64_t serial)
 {
     //open items table, get item
