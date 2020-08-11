@@ -204,18 +204,22 @@ CONTRACT marble : public contract {
     ACTION newbacking(uint64_t serial, asset amount, optional<name> release_event);
 
     //add more tokens to an existing backing
+    //pre: backing exists
     //auth: manager
     ACTION addtobacking(uint64_t serial, asset amount);
 
     //release configured amount from item backing
-    //auth: release_auth
-    ACTION release(uint64_t serial, name release_to);
+    //pre: item exists, release conditions met
+    //auth: item owner
+    ACTION release(uint64_t serial);
 
     //release all backings from an item
-    //auth: release_auth
-    // ACTION releaseall(uint64_t serial, name release_to);
+    //pre: item consumed or destroyed
+    //auth: contract (inline)
+    ACTION releaseall(uint64_t serial, name release_to);
 
     //locks a backing to prevent settings changes
+    //pre: backing not locked
     //auth: manager
     ACTION lockbacking(uint64_t serial);
 
@@ -343,16 +347,11 @@ CONTRACT marble : public contract {
     //scope: serial
     TABLE backing {
         asset backed_amount; //token amount stored by backing
-        name release_event; //event name storing release time (blank for no release time, will release when burned or consumed)
+        name release_event; //event name storing release time (blank for no release time)
         bool locked; //if true backing settings cannot be changed
 
-        // name release_style; //timed, steps, linear, auth, bhvr
-        // name release_acct; //account name that can authorize release (self for triggers)
-        // name release_perm; //permission name that can authorize release (triggers for triggers)
-        // uint8_t release_steps; //number of equal-length release durations
-        // uint32_t step_duration; //length of time for each step in seconds
-        // asset per_release; //amount released from backing per release call
-        // name release_to; //account to release backing to (blank for item owner)
+        // uint16_t steps; //number of release steps before maturity
+        // asset per_step; //amount released from backing per step
 
         uint64_t primary_key() const { return backed_amount.symbol.code().raw(); }
         EOSLIB_SERIALIZE(backing, (backed_amount)(release_event)(locked))

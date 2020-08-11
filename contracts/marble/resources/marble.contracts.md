@@ -403,7 +403,18 @@ summary: 'Release Item Backing'
 icon: https://github.com/Telos-Foundation/images/raw/master/ricardian_assets/eosio.contracts/icons/admin.png#9bf1cec664863bd6aaac0f814b235f8799fb02c850e9aa5da34e8a004bd6518e
 ---
 
-Release item backing.
+Release item backing if release conditions have been met.
+
+<h1 class="contract">releaseall</h1>
+
+---
+spec_version: "0.2.0"
+title: Release All Backings
+summary: 'Release All Item Backing'
+icon: https://github.com/Telos-Foundation/images/raw/master/ricardian_assets/eosio.contracts/icons/admin.png#9bf1cec664863bd6aaac0f814b235f8799fb02c850e9aa5da34e8a004bd6518e
+---
+
+Release all item backings.
 
 <h1 class="contract">lockbacking</h1>
 

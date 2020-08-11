@@ -391,9 +391,9 @@ ACTION marble::consumeitem(uint64_t serial)
 
     //if backing found
     if (back_itr != backings.end()) {
-        //send inline marble::release to self
+        //send inline marble::releaseall to self
         //auth: self
-        action(permission_level{get_self(), name("active")}, get_self(), name("release"), make_tuple(
+        action(permission_level{get_self(), name("active")}, get_self(), name("releaseall"), make_tuple(
             serial, //serial
             itm.owner //release_to
         )).send();
@@ -435,9 +435,9 @@ ACTION marble::destroyitem(uint64_t serial, string memo)
 
     //if backing found
     if (back_itr != backings.end()) {
-        //send inline marble::release to self
+        //send inline marble::releaseall to self
         //auth: self
-        action(permission_level{get_self(), name("active")}, get_self(), name("release"), make_tuple(
+        action(permission_level{get_self(), name("active")}, get_self(), name("releaseall"), make_tuple(
             serial, //serial
             itm.owner //release_to
         )).send();
@@ -965,7 +965,55 @@ ACTION marble::addtobacking(uint64_t serial, asset amount)
     });
 }
 
-ACTION marble::release(uint64_t serial, name release_to)
+ACTION marble::release(uint64_t serial)
+{
+    //open items table, get item
+    items_table items(get_self(), get_self().value);
+    auto& itm = items.get(serial, "item not found");
+
+    //authenticate
+    require_auth(itm.owner);
+
+    //open backings table, get backing
+    backings_table backings(get_self(), serial);
+    auto& back = backings.get(CORE_SYM.code().raw(), "backing not found");
+
+    //validate
+    check(back.release_event != name(0), "backing must have a release event to manually release");
+
+    //initialize
+    time_point_sec now = time_point_sec(current_time_point());
+
+    //open events table, get event
+    events_table events(get_self(), serial);
+    auto& evnt = events.get(back.release_event.value, "event not found");
+
+    //validate
+    check(now >= evnt.event_time, "backing can only be released after release event time");
+
+    //open accounts table, search for account
+    accounts_table accounts(get_self(), itm.owner.value);
+    auto acct_itr = accounts.find(CORE_SYM.code().raw());
+
+    //if account found
+    if (acct_itr != accounts.end()) {
+        //add to existing account
+        accounts.modify(*acct_itr, same_payer, [&](auto& col) {
+            col.balance += back.backed_amount;
+        });
+    } else {
+        //create new account
+        //ram payer: contract
+        accounts.emplace(get_self(), [&](auto& col) {
+            col.balance = back.backed_amount;
+        });
+    }
+
+    //erase backing
+    backings.erase(back);
+}
+
+ACTION marble::releaseall(uint64_t serial, name release_to)
 {
     //authenticate
     // require_auth(permission_level{get_self(), name("releases")});
@@ -974,19 +1022,6 @@ ACTION marble::release(uint64_t serial, name release_to)
     //open backings table, get backing
     backings_table backings(get_self(), serial);
     auto& back = backings.get(CORE_SYM.code().raw(), "backing not found");
-
-    //initialize
-    time_point_sec now = time_point_sec(current_time_point());
-
-    //if backing has release event
-    if (back.release_event != name(0)) {
-        //open events table, get event
-        events_table events(get_self(), serial);
-        auto& evnt = events.get(back.release_event.value, "event not found");
-
-        //validate
-        check(now >= evnt.event_time, "backing can only be released after release event time");
-    }
 
     //open accounts table, search for account
     accounts_table accounts(get_self(), release_to.value);
