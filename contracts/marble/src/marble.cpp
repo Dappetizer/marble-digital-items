@@ -2,8 +2,8 @@
 
 //======================== admin actions ========================
 
-ACTION marble::init(string contract_name, string contract_version, name initial_admin) {
-    
+ACTION marble::init(string contract_name, string contract_version, name initial_admin)
+{
     //authenticate
     require_auth(get_self());
 
@@ -24,11 +24,10 @@ ACTION marble::init(string contract_name, string contract_version, name initial_
 
     //set new config
     configs.set(new_conf, get_self());
-
 }
 
-ACTION marble::setversion(string new_version) {
-    
+ACTION marble::setversion(string new_version)
+{
     //get config
     config_table configs(get_self(), get_self().value);
     auto conf = configs.get();
@@ -41,11 +40,10 @@ ACTION marble::setversion(string new_version) {
 
     //update configs table
     configs.set(conf, get_self());
-
 }
 
-ACTION marble::setadmin(name new_admin) {
-    
+ACTION marble::setadmin(name new_admin)
+{
     //open config table, get config
     config_table configs(get_self(), get_self().value);
     auto conf = configs.get();
@@ -61,13 +59,12 @@ ACTION marble::setadmin(name new_admin) {
 
     //update config table
     configs.set(conf, get_self());
-
 }
 
 //======================== group actions ========================
 
-ACTION marble::newgroup(string title, string description, name group_name, name manager, uint64_t supply_cap) {
-    
+ACTION marble::newgroup(string title, string description, name group_name, name manager, uint64_t supply_cap)
+{
     //open config table, get config
     config_table configs(get_self(), get_self().value);
     auto conf = configs.get();
@@ -123,11 +120,10 @@ ACTION marble::newgroup(string title, string description, name group_name, name 
         });
 
     }
-
 }
 
-ACTION marble::editgroup(name group_name, string new_title, string new_description) {
-
+ACTION marble::editgroup(name group_name, string new_title, string new_description)
+{
     //get group
     groups_table groups(get_self(), get_self().value);
     auto& grp = groups.get(group_name.value, "group not found");
@@ -140,11 +136,10 @@ ACTION marble::editgroup(name group_name, string new_title, string new_descripti
         col.title = new_title;
         col.description = new_description;
     });
-
 }
 
-ACTION marble::setmanager(name group_name, name new_manager, string memo) {
-    
+ACTION marble::setmanager(name group_name, name new_manager, string memo)
+{
     //get group
     groups_table groups(get_self(), get_self().value);
     auto& grp = groups.get(group_name.value, "group not found");
@@ -159,12 +154,12 @@ ACTION marble::setmanager(name group_name, name new_manager, string memo) {
     groups.modify(grp, same_payer, [&](auto& col) {
         col.manager = new_manager;
     });
-
 }
 
 //======================== behavior actions ========================
 
-ACTION marble::addbehavior(name group_name, name behavior_name, bool initial_state) {
+ACTION marble::addbehavior(name group_name, name behavior_name, bool initial_state)
+{
     
     //get group
     groups_table groups(get_self(), get_self().value);
@@ -187,10 +182,10 @@ ACTION marble::addbehavior(name group_name, name behavior_name, bool initial_sta
         col.state = initial_state;
         col.locked = false;
     });
-
 }
 
-ACTION marble::toggle(name group_name, name behavior_name) {
+ACTION marble::togglebhvr(name group_name, name behavior_name)
+{
     
     //get group
     groups_table groups(get_self(), get_self().value);
@@ -210,11 +205,10 @@ ACTION marble::toggle(name group_name, name behavior_name) {
     behaviors.modify(bhvr, same_payer, [&](auto& col) {
         col.state = !bhvr.state;
     });
-
 }
 
-ACTION marble::lockbhvr(name group_name, name behavior_name) {
-
+ACTION marble::lockbhvr(name group_name, name behavior_name)
+{
     //get group
     groups_table groups(get_self(), get_self().value);
     auto& grp = groups.get(group_name.value, "group not found");
@@ -233,11 +227,10 @@ ACTION marble::lockbhvr(name group_name, name behavior_name) {
     behaviors.modify(bhvr, same_payer, [&](auto& col) {
         col.locked = true;
     });
-
 }
 
-ACTION marble::rmvbehavior(name group_name, name behavior_name) {
-    
+ACTION marble::rmvbehavior(name group_name, name behavior_name)
+{
     //get group
     groups_table groups(get_self(), get_self().value);
     auto& grp = groups.get(group_name.value, "group not found");
@@ -251,19 +244,17 @@ ACTION marble::rmvbehavior(name group_name, name behavior_name) {
 
     //erase behavior
     behaviors.erase(bhvr);
-
 }
 
 //======================== item actions ========================
 
-ACTION marble::mintitem(name to, name group_name) {
-    
+ACTION marble::mintitem(name to, name group_name)
+{
     //open groups table, get group
     groups_table groups(get_self(), get_self().value);
     auto& grp = groups.get(group_name.value, "group name not found");
 
     //authenticate
-    // require_auth(grp.manager);
     check(has_auth(grp.manager) || has_auth(get_self()), "only contract or group manager can mint items");
 
     //open behaviors table, get behavior
@@ -318,17 +309,15 @@ ACTION marble::mintitem(name to, name group_name) {
         now, //event_time
         logevent_memo //memo
     )).send();
-
 }
 
-ACTION marble::transferitem(name from, name to, vector<uint64_t> serials, string memo) {
-
+ACTION marble::transferitem(name from, name to, vector<uint64_t> serials, string memo)
+{
     //validate
     check(is_account(to), "to account doesn't exist");
 
     //loop over serials
     for (uint64_t s : serials) {
-
         //open items table, get item
         items_table items(get_self(), get_self().value);
         auto& itm = items.get(s, "item not found");
@@ -351,17 +340,15 @@ ACTION marble::transferitem(name from, name to, vector<uint64_t> serials, string
         items.modify(itm, same_payer, [&](auto& col) {
             col.owner = to;
         });
-
     }
 
     //notify from and to accounts
     require_recipient(from);
     require_recipient(to);
-
 }
 
-ACTION marble::activateitem(uint64_t serial) {
-
+ACTION marble::activateitem(uint64_t serial)
+{
     //open items table, get item
     items_table items(get_self(), get_self().value);
     auto& itm = items.get(serial, "item not found");
@@ -375,11 +362,10 @@ ACTION marble::activateitem(uint64_t serial) {
 
     //validate
     check(bhvr.state, "item is not activatable");
-
 }
 
-ACTION marble::consumeitem(uint64_t serial) {
-
+ACTION marble::consumeitem(uint64_t serial)
+{
     //open items table, get item
     items_table items(get_self(), get_self().value);
     auto& itm = items.get(serial, "item not found");
@@ -399,6 +385,20 @@ ACTION marble::consumeitem(uint64_t serial) {
     check(bhvr.state, "item is not consumable");
     check(grp.supply > 0, "cannot reduce supply below zero");
 
+    //open bonds table, find bond
+    bonds_table bonds(get_self(), serial);
+    auto bond_itr = bonds.find(CORE_SYM.code().raw());
+
+    //if bond found
+    if (bond_itr != bonds.end()) {
+        //send inline marble::releaseall to self
+        //auth: self
+        action(permission_level{get_self(), name("active")}, get_self(), name("releaseall"), make_tuple(
+            serial, //serial
+            itm.owner //release_to
+        )).send();
+    }
+
     //update group
     groups.modify(grp, same_payer, [&](auto& col) {
         col.supply -= 1;
@@ -406,11 +406,10 @@ ACTION marble::consumeitem(uint64_t serial) {
 
     //erase item
     items.erase(itm);
-
 }
 
-ACTION marble::destroyitem(uint64_t serial, string memo) {
-
+ACTION marble::destroyitem(uint64_t serial, string memo)
+{
     //open items table, get item
     items_table items(get_self(), get_self().value);
     auto& itm = items.get(serial, "item not found");
@@ -430,6 +429,20 @@ ACTION marble::destroyitem(uint64_t serial, string memo) {
     check(bhvr.state, "item is not destroyable");
     check(grp.supply > 0, "cannot reduce supply below zero");
 
+    //open bonds table, find bond
+    bonds_table bonds(get_self(), serial);
+    auto bond_itr = bonds.find(CORE_SYM.code().raw());
+
+    //if bond found
+    if (bond_itr != bonds.end()) {
+        //send inline marble::releaseall to self
+        //auth: self
+        action(permission_level{get_self(), name("active")}, get_self(), name("releaseall"), make_tuple(
+            serial, //serial
+            itm.owner //release_to
+        )).send();
+    }
+
     //update group
     groups.modify(grp, same_payer, [&](auto& col) {
         col.supply -= 1;
@@ -437,13 +450,12 @@ ACTION marble::destroyitem(uint64_t serial, string memo) {
 
     //erase item
     items.erase(itm);
-
 }
 
 //======================== tag actions ========================
 
-ACTION marble::newtag(uint64_t serial, name tag_name, string content, optional<string> checksum, optional<string> algorithm) {
-
+ACTION marble::newtag(uint64_t serial, name tag_name, string content, optional<string> checksum, optional<string> algorithm)
+{
     //open items table, get item
     items_table items(get_self(), get_self().value);
     auto& itm = items.get(serial, "item not found");
@@ -484,11 +496,10 @@ ACTION marble::newtag(uint64_t serial, name tag_name, string content, optional<s
         col.algorithm = algo;
         col.locked = false;
     });
-
 }
 
-ACTION marble::updatetag(uint64_t serial, name tag_name, string new_content, optional<string> new_checksum, optional<string> new_algorithm) {
-
+ACTION marble::updatetag(uint64_t serial, name tag_name, string new_content, optional<string> new_checksum, optional<string> new_algorithm)
+{
     //open items table, get item
     items_table items(get_self(), get_self().value);
     auto& itm = items.get(serial, "item not found");
@@ -524,11 +535,10 @@ ACTION marble::updatetag(uint64_t serial, name tag_name, string new_content, opt
         col.checksum = new_chsum;
         col.algorithm = new_algo;
     });
-
 }
 
-ACTION marble::locktag(uint64_t serial, name tag_name) {
-
+ACTION marble::locktag(uint64_t serial, name tag_name)
+{
     //open items table, get item
     items_table items(get_self(), get_self().value);
     auto& itm = items.get(serial, "item not found");
@@ -551,11 +561,10 @@ ACTION marble::locktag(uint64_t serial, name tag_name) {
     tags.modify(tg, same_payer, [&](auto& col) {
         col.locked = true;
     });
-
 }
 
-ACTION marble::rmvtag(uint64_t serial, name tag_name, string memo) {
-
+ACTION marble::rmvtag(uint64_t serial, name tag_name, string memo)
+{
     //open items table, get item
     items_table items(get_self(), get_self().value);
     auto& itm = items.get(serial, "item not found");
@@ -573,13 +582,12 @@ ACTION marble::rmvtag(uint64_t serial, name tag_name, string memo) {
 
     //erase item
     tags.erase(tg);
-
 }
 
 //======================== attribute actions ========================
 
-ACTION marble::newattribute(uint64_t serial, name attribute_name, int64_t initial_points) {
-
+ACTION marble::newattribute(uint64_t serial, name attribute_name, int64_t initial_points)
+{
     //open items table, get item
     items_table items(get_self(), get_self().value);
     auto& itm = items.get(serial, "item not found");
@@ -605,11 +613,10 @@ ACTION marble::newattribute(uint64_t serial, name attribute_name, int64_t initia
         col.points = initial_points;
         col.locked = false;
     });
-
 }
 
-ACTION marble::setpoints(uint64_t serial, name attribute_name, int64_t new_points) {
-    
+ACTION marble::setpoints(uint64_t serial, name attribute_name, int64_t new_points)
+{
     //open items table, get item
     items_table items(get_self(), get_self().value);
     auto& itm = items.get(serial, "item not found");
@@ -632,11 +639,10 @@ ACTION marble::setpoints(uint64_t serial, name attribute_name, int64_t new_point
     attributes.modify(attr, same_payer, [&](auto& col) {
         col.points = new_points;
     });
-
 }
 
-ACTION marble::increasepts(uint64_t serial, name attribute_name, uint64_t points_to_add) {
-    
+ACTION marble::increasepts(uint64_t serial, name attribute_name, uint64_t points_to_add)
+{
     //open items table, get item
     items_table items(get_self(), get_self().value);
     auto& itm = items.get(serial, "item not found");
@@ -660,11 +666,10 @@ ACTION marble::increasepts(uint64_t serial, name attribute_name, uint64_t points
     attributes.modify(attr, same_payer, [&](auto& col) {
         col.points += points_to_add;
     });
-
 }
 
-ACTION marble::decreasepts(uint64_t serial, name attribute_name, uint64_t points_to_subtract) {
-
+ACTION marble::decreasepts(uint64_t serial, name attribute_name, uint64_t points_to_subtract)
+{
     //open items table, get item
     items_table items(get_self(), get_self().value);
     auto& itm = items.get(serial, "item not found");
@@ -688,11 +693,10 @@ ACTION marble::decreasepts(uint64_t serial, name attribute_name, uint64_t points
     attributes.modify(attr, same_payer, [&](auto& col) {
         col.points -= points_to_subtract;
     });
-
 }
 
-ACTION marble::lockattr(uint64_t serial, name attribute_name) {
-
+ACTION marble::lockattr(uint64_t serial, name attribute_name)
+{
     //open items table, get item
     items_table items(get_self(), get_self().value);
     auto& itm = items.get(serial, "item not found");
@@ -715,11 +719,10 @@ ACTION marble::lockattr(uint64_t serial, name attribute_name) {
     attributes.modify(attr, same_payer, [&](auto& col) {
         col.locked = true;
     });
-
 }
 
-ACTION marble::rmvattribute(uint64_t serial, name attribute_name) {
-
+ACTION marble::rmvattribute(uint64_t serial, name attribute_name)
+{
     //open items table, get item
     items_table items(get_self(), get_self().value);
     auto& itm = items.get(serial, "item not found");
@@ -740,20 +743,18 @@ ACTION marble::rmvattribute(uint64_t serial, name attribute_name) {
 
     //erase attribute
     attributes.erase(attr);
-
 }
 
 //======================== event actions ========================
 
-ACTION marble::logevent(name event_name, int64_t event_value, time_point_sec event_time, string memo) {
-
+ACTION marble::logevent(name event_name, int64_t event_value, time_point_sec event_time, string memo)
+{
     //authenticate
     require_auth(get_self());
-
 }
 
-ACTION marble::newevent(uint64_t serial, name event_name, optional<time_point_sec> custom_event_time) {
-
+ACTION marble::newevent(uint64_t serial, name event_name, optional<time_point_sec> custom_event_time)
+{
     //open items table, get item
     items_table items(get_self(), get_self().value);
     auto& itm = items.get(serial, "item not found");
@@ -787,11 +788,10 @@ ACTION marble::newevent(uint64_t serial, name event_name, optional<time_point_se
         col.event_name = event_name;
         col.event_time = new_event_time;
     });
-
 }
 
-ACTION marble::seteventtime(uint64_t serial, name event_name, time_point_sec new_event_time) {
-
+ACTION marble::seteventtime(uint64_t serial, name event_name, time_point_sec new_event_time)
+{
     //open items table, get item
     items_table items(get_self(), get_self().value);
     auto& itm = items.get(serial, "item not found");
@@ -812,13 +812,12 @@ ACTION marble::seteventtime(uint64_t serial, name event_name, time_point_sec new
 
     //modify event
     events.modify(evnt, same_payer, [&](auto& col) {
-        col.event_time += new_event_time;
+        col.event_time = new_event_time;
     });
-
 }
 
-ACTION marble::lockevent(uint64_t serial, name event_name) {
-
+ACTION marble::lockevent(uint64_t serial, name event_name)
+{
     //open items table, get item
     items_table items(get_self(), get_self().value);
     auto& itm = items.get(serial, "item not found");
@@ -841,11 +840,10 @@ ACTION marble::lockevent(uint64_t serial, name event_name) {
     events.modify(evnt, same_payer, [&](auto& col) {
         col.locked = true;
     });
-
 }
 
-ACTION marble::rmvevent(uint64_t serial, name event_name) {
-
+ACTION marble::rmvevent(uint64_t serial, name event_name)
+{
     //open items table, get item
     items_table items(get_self(), get_self().value);
     auto& itm = items.get(serial, "item not found");
@@ -863,12 +861,12 @@ ACTION marble::rmvevent(uint64_t serial, name event_name) {
 
     //erase event
     events.erase(evnt);
-
 }
 
-//======================== backing actions ========================
+//======================== bond actions ========================
 
-ACTION marble::newbacking(uint64_t serial, asset amount, optional<name> release_auth, optional<asset> per_release) {
+ACTION marble::newbond(uint64_t serial, asset amount, optional<name> release_event)
+{
     //validate
     check(amount.symbol == CORE_SYM, "asset must be core symbol");
 
@@ -896,95 +894,187 @@ ACTION marble::newbacking(uint64_t serial, asset amount, optional<name> release_
         col.balance -= amount;
     });
 
-    //open backings table, search for backing
-    backings_table backings(get_self(), serial);
-    auto back_itr = backings.find(amount.symbol.code().raw());
+    //open bonds table, search for bond
+    bonds_table bonds(get_self(), serial);
+    auto bond_itr = bonds.find(amount.symbol.code().raw());
+
+    //validate
+    check(bond_itr == bonds.end(), "bond already exists");
 
     //initialize
-    name backing_release_auth = get_self();
-    asset backing_per_release = amount;
+    name bond_release_event = (release_event) ? *release_event : name(0);
 
-    //if release_auth param provided
-    if (release_auth) {
-        backing_release_auth = *release_auth;
+    //if release event not blank
+    if (bond_release_event != name(0)) {
+        //open events table, get event
+        events_table events(get_self(), serial);
+        auto& evnt = events.get(bond_release_event.value, "release event not found");
+
+        //validate
+        check(evnt.event_time > time_point_sec(current_time_point()), "release event time must be in the future");
     }
 
-    //if per_release param provided
-    if (per_release) {
-        backing_per_release = *per_release;
-    }
-
-    //if backing not found
-    if (back_itr == backings.end()) {
-        //emplace new backing
-        //ram payer: contract
-        backings.emplace(get_self(), [&](auto& col) {
-            col.backing_amount = amount;
-            col.release_auth = backing_release_auth;
-            col.per_release = backing_per_release;
-            col.locked = false;
-        });
-    } else {
-        //add to existing backing
-        backings.modify(*back_itr, same_payer, [&](auto& col) {
-            col.backing_amount += amount;
-        });
-    }
-
+    //emplace new bond
+    //ram payer: contract
+    bonds.emplace(get_self(), [&](auto& col) {
+        col.backed_amount = amount;
+        col.release_event = bond_release_event;
+        col.locked = false;
+    });
 }
 
-ACTION marble::release(uint64_t serial, symbol token_symbol, name release_to) {
+ACTION marble::addtobond(uint64_t serial, asset amount)
+{
     //validate
-    check(token_symbol == CORE_SYM, "only core symbol allowed");
+    check(amount.symbol == CORE_SYM, "asset must be core symbol");
 
-    //open backings table, get backing
-    backings_table backings(get_self(), serial);
-    auto& back = backings.get(token_symbol.code().raw(), "backing not found");
+    //open items table, get item
+    items_table items(get_self(), get_self().value);
+    auto& itm = items.get(serial, "item not found");
+
+    //open groups table, get group
+    groups_table groups(get_self(), get_self().value);
+    auto& grp = groups.get(itm.group.value, "group not found");
 
     //authenticate
-    require_auth(back.release_auth);
+    require_auth(grp.manager);
+
+    //open accounts table, get manager account
+    accounts_table accounts(get_self(), grp.manager.value);
+    auto& acct = accounts.get(amount.symbol.code().raw(), "manager account not found");
 
     //validate
-    check(back.backing_amount.amount >= back.per_release.amount, "cannot release more than backing amount");
+    check(acct.balance >= amount, "insufficient funds");
+    check(amount.amount > 0, "must back with a positive amount");
+
+    //subtract from account balance
+    accounts.modify(acct, same_payer, [&](auto& col) {
+        col.balance -= amount;
+    });
+
+    //open bonds table, search for bond
+    bonds_table bonds(get_self(), serial);
+    auto& bnd = bonds.get(amount.symbol.code().raw(), "bond not found");
+
+    //validate
+    check(!bnd.locked, "bond cannot be modified if locked");
+
+    //update bond
+    bonds.modify(bnd, same_payer, [&](auto& col) {
+        col.backed_amount += amount;
+    });
+}
+
+ACTION marble::release(uint64_t serial)
+{
+    //open items table, get item
+    items_table items(get_self(), get_self().value);
+    auto& itm = items.get(serial, "item not found");
+
+    //authenticate
+    require_auth(itm.owner);
+
+    //open bonds table, get bond
+    bonds_table bonds(get_self(), serial);
+    auto& bnd = bonds.get(CORE_SYM.code().raw(), "bond not found");
+
+    //validate
+    check(bnd.release_event != name(0), "bond must have a release event to manually release");
+
+    //initialize
+    time_point_sec now = time_point_sec(current_time_point());
+
+    //open events table, get event
+    events_table events(get_self(), serial);
+    auto& evnt = events.get(bnd.release_event.value, "event not found");
+
+    //validate
+    check(now >= evnt.event_time, "bond can only be released after release event time");
 
     //open accounts table, search for account
-    accounts_table accounts(get_self(), release_to.value);
-    auto acct_itr = accounts.find(token_symbol.code().raw());
+    accounts_table accounts(get_self(), itm.owner.value);
+    auto acct_itr = accounts.find(CORE_SYM.code().raw());
 
     //if account found
     if (acct_itr != accounts.end()) {
         //add to existing account
         accounts.modify(*acct_itr, same_payer, [&](auto& col) {
-            col.balance += back.per_release;
+            col.balance += bnd.backed_amount;
         });
     } else {
         //create new account
         //ram payer: contract
         accounts.emplace(get_self(), [&](auto& col) {
-            col.balance = back.per_release;
+            col.balance = bnd.backed_amount;
         });
     }
 
-    //if backing amount greater than per release amount
-    if (back.backing_amount.amount > back.per_release.amount) {
-        //subtract release amount from backing
-        backings.modify(back, same_payer, [&](auto& col) {
-            col.backing_amount -= back.per_release;
-        });
-    } else {
-        //erase backing
-        backings.erase(back);
-    }
-
+    //erase bond
+    bonds.erase(bnd);
 }
 
-//======================== trigger actions ========================
+ACTION marble::releaseall(uint64_t serial, name release_to)
+{
+    //authenticate
+    // require_auth(permission_level{get_self(), name("releases")});
+    require_auth(get_self());
 
-// ACTION marble::newtrigger(uint64_t serial, name behavior_name, name action_name, vector<char> action_payload, optional<uint16_t> total_execs)
+    //open bonds table, get bond
+    bonds_table bonds(get_self(), serial);
+    auto& bnd = bonds.get(CORE_SYM.code().raw(), "bond not found");
+
+    //open accounts table, search for account
+    accounts_table accounts(get_self(), release_to.value);
+    auto acct_itr = accounts.find(CORE_SYM.code().raw());
+
+    //if account found
+    if (acct_itr != accounts.end()) {
+        //add to existing account
+        accounts.modify(*acct_itr, same_payer, [&](auto& col) {
+            col.balance += bnd.backed_amount;
+        });
+    } else {
+        //create new account
+        //ram payer: contract
+        accounts.emplace(get_self(), [&](auto& col) {
+            col.balance = bnd.backed_amount;
+        });
+    }
+
+    //erase bond
+    bonds.erase(bnd);
+}
+
+ACTION marble::lockbond(uint64_t serial)
+{
+    //open items table, get item
+    items_table items(get_self(), get_self().value);
+    auto& itm = items.get(serial, "item not found");
+
+    //open groups table, get group
+    groups_table groups(get_self(), get_self().value);
+    auto& grp = groups.get(itm.group.value, "group not found");
+
+    //authenticate
+    require_auth(grp.manager);
+
+    //open bonds table, get bond
+    bonds_table bonds(get_self(), serial);
+    auto& bnd = bonds.get(CORE_SYM.code().raw(), "bond not found");
+
+    //validate
+    check(!bnd.locked, "bond is already locked");
+
+    //update bond
+    bonds.modify(bnd, same_payer, [&](auto& col) {
+        col.locked = true;
+    });
+}
 
 //======================== account actions ========================
 
-ACTION marble::withdraw(name account_owner, asset amount) {
+ACTION marble::withdraw(name account_owner, asset amount)
+{
     //validate
     check(amount.symbol == CORE_SYM, "can only withdraw core token");
     
@@ -999,10 +1089,16 @@ ACTION marble::withdraw(name account_owner, asset amount) {
     check(amount.amount > 0, "must withdraw a positive amount");
     check(acct.balance >= amount, "insufficient funds");
 
-    //update account balance
-    accounts.modify(acct, same_payer, [&](auto& col) {
-        col.balance -= amount;
-    });
+    //if withdrawing all tokens
+    if (acct.balance == amount) {
+        //erase account
+        accounts.erase(acct);
+    } else {
+        //update account balance
+        accounts.modify(acct, same_payer, [&](auto& col) {
+            col.balance -= amount;
+        });
+    }
 
     //send inline eosio.token::transfer to withdrawing account
     //auth: self
@@ -1016,11 +1112,12 @@ ACTION marble::withdraw(name account_owner, asset amount) {
 
 //======================== notification handlers ========================
 
-void marble::catch_transfer(name from, name to, asset quantity, string memo) {
+void marble::catch_transfer(name from, name to, asset quantity, string memo)
+{
     //get initial receiver contract
     name rec = get_first_receiver();
 
-    //if received notification from eosio.token, not from self, and symbol is TLOS
+    //if received notification from eosio.token, not from self, and symbol is CORE SYM
     if (rec == name("eosio.token") && from != get_self() && quantity.symbol == CORE_SYM) {
         //if memo is "deposit"
         if (memo == std::string("deposit")) { 
@@ -1047,8 +1144,8 @@ void marble::catch_transfer(name from, name to, asset quantity, string memo) {
 
 //======================== frame actions ========================
 
-ACTION marble::newframe(name frame_name, name group, map<name, string> default_tags, map<name, int64_t> default_attributes) {
-
+ACTION marble::newframe(name frame_name, name group, map<name, string> default_tags, map<name, int64_t> default_attributes)
+{
     //open groups table, get group
     groups_table groups(get_self(), get_self().value);
     auto& grp = groups.get(group.value, "group not found");
@@ -1071,11 +1168,10 @@ ACTION marble::newframe(name frame_name, name group, map<name, string> default_t
         col.default_tags = default_tags;
         col.default_attributes = default_attributes;
     });
-
 }
 
-ACTION marble::applyframe(name frame_name, uint64_t serial, bool overwrite) {
-
+ACTION marble::applyframe(name frame_name, uint64_t serial, bool overwrite)
+{
     //open frames table, get frame
     frames_table frames(get_self(), get_self().value);
     auto& frm = frames.get(frame_name.value, "frame not found");
@@ -1089,7 +1185,6 @@ ACTION marble::applyframe(name frame_name, uint64_t serial, bool overwrite) {
 
     //apply default tags
     for (auto itr = frm.default_tags.begin(); itr != frm.default_tags.end(); itr++) {
-
         //open tags table, find tag
         tags_table tags(get_self(), serial);
         auto tg_itr = tags.find(itr->first.value);
@@ -1098,7 +1193,6 @@ ACTION marble::applyframe(name frame_name, uint64_t serial, bool overwrite) {
 
         //if tag not found
         if (tg_itr == tags.end()) {
-            
             //emplace new tag
             //ram payer: self
             tags.emplace(get_self(), [&](auto& col) {
@@ -1107,9 +1201,7 @@ ACTION marble::applyframe(name frame_name, uint64_t serial, bool overwrite) {
                 col.checksum = "";
                 col.algorithm = "";
             });
-
         } else if (overwrite) {
-
             //validate
             check(!tg_itr->locked, "tag is locked");
 
@@ -1119,14 +1211,11 @@ ACTION marble::applyframe(name frame_name, uint64_t serial, bool overwrite) {
                 col.checksum = "";
                 col.algorithm = "";
             });
-
         }
-
     }
 
     //apply default attributes
     for (auto itr = frm.default_attributes.begin(); itr != frm.default_attributes.end(); itr++) {
-
         //open attributes table, find attribute
         attributes_table attributes(get_self(), serial);
         auto attr_itr = attributes.find(itr->first.value);
@@ -1135,16 +1224,13 @@ ACTION marble::applyframe(name frame_name, uint64_t serial, bool overwrite) {
 
         //if attribute not found
         if (attr_itr == attributes.end()) {
-            
             //emplace new attribute
             //ram payer: self
             attributes.emplace(get_self(), [&](auto& col) {
                 col.attribute_name = itr->first;
                 col.points = itr->second;
             });
-
         } else if (overwrite) {
-
             //validate
             check(!attr_itr->locked, "attribute is locked");
 
@@ -1152,15 +1238,12 @@ ACTION marble::applyframe(name frame_name, uint64_t serial, bool overwrite) {
             attributes.modify(attr_itr, same_payer, [&](auto& col) {
                 col.points = itr->second;
             });
-
         }
-
     }
-
 }
 
-ACTION marble::quickbuild(name frame_name, name to, map<name, string> override_tags, map<name, int64_t> override_attributes) {
-
+ACTION marble::quickbuild(name frame_name, name to, map<name, string> override_tags, map<name, int64_t> override_attributes)
+{
     //open frames table, get frame
     frames_table frames(get_self(), get_self().value);
     auto& frm = frames.get(frame_name.value, "frame not found");
@@ -1172,15 +1255,12 @@ ACTION marble::quickbuild(name frame_name, name to, map<name, string> override_t
     //authenticate
     require_auth(grp.manager);
 
-    //initialize
-    uint64_t item_serial;
-
     //open config table, get config
     config_table configs(get_self(), get_self().value);
     auto conf = configs.get();
 
-    //set new serial
-    item_serial = conf.last_serial + 1;
+    //initialize
+    uint64_t item_serial = conf.last_serial + 1;
 
     //queue inline mintitem()
     action(permission_level{get_self(), name("active")}, get_self(), name("mintitem"), make_tuple(
@@ -1190,14 +1270,12 @@ ACTION marble::quickbuild(name frame_name, name to, map<name, string> override_t
 
     //apply default tags
     for (auto itr = frm.default_tags.begin(); itr != frm.default_tags.end(); itr++) {
-
         //open tags table, search for tag
         tags_table tags(get_self(), item_serial);
         auto tg_itr = tags.find(itr->first.value);
 
         //if tag not found
         if (tg_itr == tags.end()) {
-            
             //emplace new tag
             //ram payer: contract
             tags.emplace(get_self(), [&](auto& col) {
@@ -1206,58 +1284,47 @@ ACTION marble::quickbuild(name frame_name, name to, map<name, string> override_t
                 col.checksum = "";
                 col.algorithm = "";
             });
-
         } else {
-
             //overwrite existing tag
             tags.modify(tg_itr, same_payer, [&](auto& col) {
                 col.content = itr->second;
                 col.checksum = "";
                 col.algorithm = "";
             });
-
         }
-
     }
 
     //apply default attributes
     for (auto itr = frm.default_attributes.begin(); itr != frm.default_attributes.end(); itr++) {
-
         //open attributes table, find attribute
         attributes_table attributes(get_self(), item_serial);
         auto attr_itr = attributes.find(itr->first.value);
 
         //if attribute not found
         if (attr_itr == attributes.end()) {
-            
             //emplace new attribute
             //ram payer: contract
             attributes.emplace(get_self(), [&](auto& col) {
                 col.attribute_name = itr->first;
                 col.points = itr->second;
             });
-
         } else {
 
             //overwrite existing attribute
             attributes.modify(attr_itr, same_payer, [&](auto& col) {
                 col.points = itr->second;
             });
-
         }
-
     }
 
     //apply tag overrides
     for (auto itr = override_tags.begin(); itr != override_tags.end(); itr++) {
-
         //open tags table, search for tag
         tags_table tags(get_self(), item_serial);
         auto tg_itr = tags.find(itr->first.value);
 
         //if tag not found
         if (tg_itr == tags.end()) {
-            
             //emplace new tag
             //ram payer: contract
             tags.emplace(get_self(), [&](auto& col) {
@@ -1266,23 +1333,18 @@ ACTION marble::quickbuild(name frame_name, name to, map<name, string> override_t
                 col.checksum = "";
                 col.algorithm = "";
             });
-
         } else {
-
             //overwrite existing tag
             tags.modify(tg_itr, same_payer, [&](auto& col) {
                 col.content = itr->second;
                 col.checksum = "";
                 col.algorithm = "";
             });
-
         }
-
     }
 
     //apply attribute overrides
     for (auto itr = override_attributes.begin(); itr != override_attributes.end(); itr++) {
-
         //open attributes table, find attribute
         attributes_table attributes(get_self(), item_serial);
         auto attr_itr = attributes.find(itr->first.value);
@@ -1296,22 +1358,17 @@ ACTION marble::quickbuild(name frame_name, name to, map<name, string> override_t
                 col.attribute_name = itr->first;
                 col.points = itr->second;
             });
-
         } else {
-
             //overwrite existing attribute
             attributes.modify(attr_itr, same_payer, [&](auto& col) {
                 col.points = itr->second;
             });
-
         }
-
     }
-
 }
 
-ACTION marble::rmvframe(name frame_name, string memo) {
-
+ACTION marble::rmvframe(name frame_name, string memo)
+{
     //open frames table, get frame
     frames_table frames(get_self(), get_self().value);
     auto& frm = frames.get(frame_name.value, "frame not found");
@@ -1325,5 +1382,4 @@ ACTION marble::rmvframe(name frame_name, string memo) {
 
     //erase frame
     frames.erase(frm);
-
 }

@@ -75,7 +75,7 @@ icon: https://github.com/Telos-Foundation/images/raw/master/ricardian_assets/eos
 
 Add the {{behavior_name}} behavior to the {{group_name}} group.
 
-<h1 class="contract">toggle</h1>
+<h1 class="contract">togglebhvr</h1>
 
 ---
 spec_version: "0.2.0"
@@ -372,38 +372,60 @@ icon: https://github.com/Telos-Foundation/images/raw/master/ricardian_assets/eos
 
 Remove the {{frame_name}} frame from the {{group}} group.
 
-<h1 class="contract">newbacking</h1>
+<h1 class="contract">newbond</h1>
 
 ---
 spec_version: "0.2.0"
-title: New Backing
-summary: 'New Item Backing'
+title: New Bond
+summary: 'New Item Bond'
 icon: https://github.com/Telos-Foundation/images/raw/master/ricardian_assets/eosio.contracts/icons/admin.png#9bf1cec664863bd6aaac0f814b235f8799fb02c850e9aa5da34e8a004bd6518e
 ---
 
 Back item serial {{serial}} with {{amount}}.
 
+<h1 class="contract">addtobond</h1>
+
+---
+spec_version: "0.2.0"
+title: Add To Bond
+summary: 'Add To Bond Amount'
+icon: https://github.com/Telos-Foundation/images/raw/master/ricardian_assets/eosio.contracts/icons/admin.png#9bf1cec664863bd6aaac0f814b235f8799fb02c850e9aa5da34e8a004bd6518e
+---
+
+Add {{amount}} to item {{serial}}.
+
 <h1 class="contract">release</h1>
 
 ---
 spec_version: "0.2.0"
-title: Release Backing
-summary: 'Release Item Backing'
+title: Release Bond
+summary: 'Release Item Bond'
 icon: https://github.com/Telos-Foundation/images/raw/master/ricardian_assets/eosio.contracts/icons/admin.png#9bf1cec664863bd6aaac0f814b235f8799fb02c850e9aa5da34e8a004bd6518e
 ---
 
-Release item backing.
+Release item Bond if release conditions have been met.
 
 <h1 class="contract">releaseall</h1>
 
 ---
 spec_version: "0.2.0"
-title: Release All
-summary: 'Release All Backings'
+title: Release All Bonds
+summary: 'Release All Item Bond'
 icon: https://github.com/Telos-Foundation/images/raw/master/ricardian_assets/eosio.contracts/icons/admin.png#9bf1cec664863bd6aaac0f814b235f8799fb02c850e9aa5da34e8a004bd6518e
 ---
 
-Release all backings on item serial {{serial}}.
+Release all item bondss.
+
+<h1 class="contract">lockbond</h1>
+
+---
+spec_version: "0.2.0"
+title: Lock Bond
+summary: 'Lock Bond Settings'
+icon: https://github.com/Telos-Foundation/images/raw/master/ricardian_assets/eosio.contracts/icons/admin.png#9bf1cec664863bd6aaac0f814b235f8799fb02c850e9aa5da34e8a004bd6518e
+---
+
+Lock Bond settings.
 
 <h1 class="contract">withdraw</h1>
 

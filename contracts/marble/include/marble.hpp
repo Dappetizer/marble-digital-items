@@ -1,9 +1,9 @@
-// Marble is a modular digital item format for EOSIO software.
+// Marble is a Digital Item format for EOSIO software.
 //
 // author: Craig Branscom
 // company: Dappetizer, LLC
 // contract: marble
-// version: v1.2.0
+// version: v1.0.0
 
 #include <eosio/eosio.hpp>
 #include <eosio/action.hpp>
@@ -16,7 +16,6 @@ using namespace eosio;
 //TODO: reclaim, freeze, update, release
 //TODO: create release perm, linkauth to releaseall() action
 //TODO: add core_symbol to config table
-//TODO: create_or_update_account() function
 //TODO?: add string payload_json to trigger
 
 CONTRACT marble : public contract {
@@ -70,7 +69,7 @@ CONTRACT marble : public contract {
 
     //toggle a behavior on/off
     //auth: manager
-    ACTION toggle(name group_name, name behavior_name);
+    ACTION togglebhvr(name group_name, name behavior_name);
 
     //lock a behavior to prevent mutations
     //auth: manager
@@ -95,6 +94,7 @@ CONTRACT marble : public contract {
     ACTION activateitem(uint64_t serial);
 
     //consume an item
+    //post: inline releaseall() if bond(s) exist
     //auth: owner
     ACTION consumeitem(uint64_t serial);
 
@@ -103,6 +103,7 @@ CONTRACT marble : public contract {
     // ACTION reclaimitem(uint64_t serial);
 
     //destroy an item
+    //post: inline releaseall() if bond(s) exist
     //auth: manager
     ACTION destroyitem(uint64_t serial, string memo);
 
@@ -198,41 +199,31 @@ CONTRACT marble : public contract {
     //auth: manager
     ACTION rmvframe(name frame_name, string memo);
 
-    //======================== backing actions ========================
+    //======================== bond actions ========================
 
     //back an item with a fungible token (draws from manager deposit balance)
     //auth: manager
-    ACTION newbacking(uint64_t serial, asset amount, optional<name> release_auth, optional<asset> per_release);
+    ACTION newbond(uint64_t serial, asset amount, optional<name> release_event);
 
-    //release configured amount from item backing
-    //auth: release_auth
-    ACTION release(uint64_t serial, symbol token_symbol, name release_to);
-
-    //release all backings from an item
-    //auth: release_auth
-    // ACTION releaseall(uint64_t serial, name release_to);
-
-    //locks a backing to prevent release
+    //add more tokens to an existing bond
+    //pre: bond exists, bond not locked
     //auth: manager
-    // ACTION lockbacking(uint64_t serial, symbol token_symbol);
+    ACTION addtobond(uint64_t serial, asset amount);
 
-    //======================== trigger actions ========================
+    //release preconfigured amount from item bond
+    //pre: item exists, release conditions met
+    //auth: item owner
+    ACTION release(uint64_t serial);
 
-    //create a new trigger for an item to be executed on behavior calls
+    //release all bond amounts from an item
+    //pre: item consumed or destroyed, release_to == item.owner
+    //auth: contract (inline)
+    ACTION releaseall(uint64_t serial, name release_to);
+
+    //locks a bond to prevent settings changes
+    //pre: bond not locked
     //auth: manager
-    // ACTION newtrigger(uint64_t serial, name behavior_name, name action_name, vector<char> action_payload, optional<uint16_t> total_execs);
-
-    //toggle primed state of trigger on/off
-    //auth: manager
-    // ACTION toggleprimed(uint64_t serial, name behavior_name);
-
-    //execute a trigger
-    //auth: contract
-    // ACTION exectrigger(uint64_t serial, name behavior_name);
-
-    //remove a trigger form an item
-    //auth: manager
-    // ACTION rmvtrigger(uint64_t serial, name behavior_name);
+    ACTION lockbond(uint64_t serial);
 
     //======================== account actions ========================
 
@@ -354,40 +345,20 @@ CONTRACT marble : public contract {
         indexed_by<"bygroup"_n, const_mem_fun<frame, uint64_t, &frame::by_group>>
     > frames_table;
 
-    //backings table
+    //bonds table
     //scope: serial
-    TABLE backing {
-        asset backing_amount; //amount stored by backing
-        // name release_acct;
-        name release_auth; //account name that can authorize release (self for triggers)
-        asset per_release; //amount released from backing per release call
-        bool locked; //if true backing cannot be released
+    TABLE bond {
+        asset backed_amount; //token amount stored by bond
+        name release_event; //event name storing release time (blank for no release time)
+        bool locked; //if true bond settings cannot be changed
 
-        uint64_t primary_key() const { return backing_amount.symbol.code().raw(); }
-        EOSLIB_SERIALIZE(backing, (backing_amount)(release_auth)(per_release)(locked))
+        // uint16_t steps; //number of release steps before maturity
+        // asset per_step; //amount released from bond per step
+
+        uint64_t primary_key() const { return backed_amount.symbol.code().raw(); }
+        EOSLIB_SERIALIZE(bond, (backed_amount)(release_event)(locked))
     };
-    typedef multi_index<name("backings"), backing> backings_table;
-
-    //triggers table
-    //scope: serial
-    // TABLE trigger {
-    //     name behavior_name; //behavior that executes trigger
-
-    //     // pair<char, char> comparator; //<, >, ==, !=, <=, >= (LESS_THAN, GREATER_THAN, EQUAL_TO, NOT_EUQAL_TO, LESS_THAN_EQUAL_TO, GREATER_THAN_EQUAL_TO)
-    //     // variant<string, int64_t, time_point_sec, asset> conditions; //item values to compare before execution
-
-    //     name action_name; //name of action to execute as inline
-    //     vector<char> action_payload; //action payload as packed data
-
-    //     bool primed; //if true will execute when triggered, if false will ignore
-    //     uint16_t remaining_execs; //decrements upon trigger execution
-    //     bool auto_prime; //automatically primes trigger again after execution
-    //     bool auto_erase; //erases trigger after remaining_execs reach zero
-
-    //     uint64_t primary_key() const { return behavior_name.value; }
-    //     EOSLIB_SERIALIZE(trigger, (behavior_name))
-    // };
-    // typedef multi_index<name("triggers"), trigger> triggers_table;
+    typedef multi_index<name("bonds"), bond> bonds_table;
 
     //accounts table
     //scope: account
