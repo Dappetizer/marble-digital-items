@@ -141,6 +141,17 @@ icon: https://github.com/Telos-Foundation/images/raw/master/ricardian_assets/eos
 
 Activate an Item in the {{group_name}} group.
 
+<h1 class="contract">reclaimitem</h1>
+
+---
+spec_version: "0.2.0"
+title: Reclaim Item
+summary: 'Reclaim Item'
+icon: https://github.com/Telos-Foundation/images/raw/master/ricardian_assets/eosio.contracts/icons/admin.png#9bf1cec664863bd6aaac0f814b235f8799fb02c850e9aa5da34e8a004bd6518e
+---
+
+Reclaim an item.
+
 <h1 class="contract">consumeitem</h1>
 
 ---

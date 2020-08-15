@@ -13,7 +13,7 @@
 using namespace std;
 using namespace eosio;
 
-//TODO: reclaim, freeze, update, release
+//TODO: freeze, update, release
 //TODO: create release perm, linkauth to releaseall() action
 //TODO: add core_symbol to config table
 //TODO?: add string payload_json to trigger
@@ -93,14 +93,14 @@ CONTRACT marble : public contract {
     //auth: owner
     ACTION activateitem(uint64_t serial);
 
+    //reclaim an item from the owner
+    //auth: manager
+    ACTION reclaimitem(uint64_t serial);
+
     //consume an item
     //post: inline releaseall() if bond(s) exist
     //auth: owner
     ACTION consumeitem(uint64_t serial);
-
-    //reclaim an item from the owner
-    //auth: manager
-    // ACTION reclaimitem(uint64_t serial);
 
     //destroy an item
     //post: inline releaseall() if bond(s) exist
