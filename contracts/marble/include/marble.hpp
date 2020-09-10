@@ -437,7 +437,7 @@ CONTRACT marble : public contract
         // asset per_step; //amount released from bond per step
 
         uint64_t primary_key() const { return backed_amount.symbol.code().raw(); }
-        
+
         EOSLIB_SERIALIZE(bond, (backed_amount)(release_event)(locked))
     };
     typedef multi_index<name("bonds"), bond> bonds_table;
