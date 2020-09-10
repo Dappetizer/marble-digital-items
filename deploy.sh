@@ -18,7 +18,7 @@ if [[ "$3" == "mainnet" ]]; then
     url=http://api.tlos.goodblock.io #Telos Mainnet
 elif [[ "$3" == "testnet" ]]; then
     network=Testnet
-    url=https://testnet.telosusa.io/ #Telos Testnet (Basho)
+    url=https://testnet.telos.caleos.io/ #Telos Testnet (Basho)
 elif [[ "$3" == "local" ]]; then
     network=Local
     url=http://127.0.0.1:8888
