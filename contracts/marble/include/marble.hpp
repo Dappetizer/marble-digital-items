@@ -257,6 +257,7 @@ CONTRACT marble : public contract
         string contract_version;
         name admin;
         uint64_t last_serial;
+        //symbol core_sym;
         EOSLIB_SERIALIZE(config, (contract_name)(contract_version)(admin)(last_serial))
     };
     typedef singleton<name("config"), config> config_table;
