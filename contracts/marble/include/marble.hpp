@@ -18,8 +18,8 @@ using namespace eosio;
 //TODO: add core_symbol to config table
 //TODO?: add string payload_json to trigger
 
-CONTRACT marble : public contract {
-
+CONTRACT marble : public contract
+{
     public:
 
     marble(name self, name code, datastream<const char*> ds) : contract(self, code, ds) {};
@@ -32,8 +32,9 @@ CONTRACT marble : public contract {
     const name ACTIVATE = name("activate");
     const name CONSUME = name("consume");
     const name DESTROY = name("destroy");
+    const name FREEZE = name("freeze");
 
-    //======================== admin actions ========================
+    //======================== config actions ========================
 
     //initialize the contract
     //auth: self
@@ -46,6 +47,10 @@ CONTRACT marble : public contract {
     //set new admin
     //auth: admin
     ACTION setadmin(name new_admin);
+
+    //assume RAM costs for a table row
+    //auth: payer
+    //ACTION payram(name payer, name table_type, name key);
 
     //======================== group actions ========================
 
@@ -201,7 +206,7 @@ CONTRACT marble : public contract {
 
     //======================== bond actions ========================
 
-    //back an item with a fungible token (draws from manager deposit balance)
+    //back an item with a fungible token (draws from manager wallet balance)
     //auth: manager
     ACTION newbond(uint64_t serial, asset amount, optional<name> release_event);
 
@@ -227,7 +232,7 @@ CONTRACT marble : public contract {
 
     //======================== account actions ========================
 
-    //withdraw tokens from a deposit account
+    //withdraw tokens from a wallet
     //auth: account_owner
     ACTION withdraw(name account_owner, asset amount);
 
@@ -241,6 +246,7 @@ CONTRACT marble : public contract {
 
     //config table
     //scope: self
+    //ram payer: contract
     TABLE config {
         string contract_name;
         string contract_version;
@@ -252,6 +258,7 @@ CONTRACT marble : public contract {
 
     //groups table
     //scope: self
+    //ram payer: admin
     TABLE group {
         string title;
         string description;
@@ -268,6 +275,7 @@ CONTRACT marble : public contract {
 
     //behaviors table
     //scope: group
+    //ram payer: manager
     TABLE behavior {
         name behavior_name;
         bool state;
@@ -279,10 +287,12 @@ CONTRACT marble : public contract {
 
     //items table
     //scope: self
+    //ram payer: manager
     TABLE item {
         uint64_t serial;
         name group;
         name owner;
+        //uint64_t edition;
         uint64_t primary_key() const { return serial; }
         uint64_t by_group() const { return group.value; }
         uint64_t by_owner() const { return owner.value; }
@@ -295,6 +305,7 @@ CONTRACT marble : public contract {
 
     //tags table
     //scope: serial
+    //ram payer: manager
     TABLE tag {
         name tag_name;
         string content;
@@ -308,6 +319,7 @@ CONTRACT marble : public contract {
 
     //attributes table
     //scope: serial
+    //ram payer: manager
     TABLE attribute {
         name attribute_name;
         int64_t points;
@@ -319,6 +331,7 @@ CONTRACT marble : public contract {
 
     //events table
     //scope: serial
+    //ram payer: manager
     TABLE event {
         name event_name;
         time_point_sec event_time;
@@ -330,6 +343,7 @@ CONTRACT marble : public contract {
 
     //frames table
     //scope: self
+    //ram payer: manager
     TABLE frame {
         name frame_name;
         name group;
@@ -347,6 +361,7 @@ CONTRACT marble : public contract {
 
     //bonds table
     //scope: serial
+    //ram payer: manager
     TABLE bond {
         asset backed_amount; //token amount stored by bond
         name release_event; //event name storing release time (blank for no release time)
@@ -360,7 +375,7 @@ CONTRACT marble : public contract {
     };
     typedef multi_index<name("bonds"), bond> bonds_table;
 
-    //accounts table
+    //accounts table //TODO: rename to wallets
     //scope: account
     TABLE account {
         asset balance; //account balance amount
@@ -370,14 +385,14 @@ CONTRACT marble : public contract {
     };
     typedef multi_index<name("accounts"), account> accounts_table;
 
-    //deposits table
+    //currencies table
     //scope: self //TODO?: contract_account
-    // TABLE deposits {
-    //     asset total_deposits; //total deposited assets across accounts
-    //     uint32_t unique_accounts; //total unique accounts with balance
-    //     uint64_t primary_key() const { return total_deposits.symbol.code().raw(); }
-    //     EOSLIB_SERIALZIE(deposit, (total_deposits)(unique_accounts))
+    // TABLE currency {
+    //     asset deposits; //total deposited assets across wallets
+    //     uint32_t unique_wallets; //total unique wallets with balance
+    //     uint64_t primary_key() const { return deposits.symbol.code().raw(); }
+    //     EOSLIB_SERIALIZE(currency, (deposits)(wallets))
     // };
-    // typedef multi_index<name("deposits"), deposit> deposits_table;
+    // typedef multi_index<name("currencies"), currency> currencies_table;
 
 };

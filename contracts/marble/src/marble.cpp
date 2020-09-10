@@ -1,6 +1,6 @@
 #include "../include/marble.hpp"
 
-//======================== admin actions ========================
+//======================== config actions ========================
 
 ACTION marble::init(string contract_name, string contract_version, name initial_admin)
 {
@@ -161,7 +161,6 @@ ACTION marble::setmanager(name group_name, name new_manager, string memo)
 
 ACTION marble::addbehavior(name group_name, name behavior_name, bool initial_state)
 {
-    
     //get group
     groups_table groups(get_self(), get_self().value);
     auto& grp = groups.get(group_name.value, "group not found");
@@ -187,7 +186,6 @@ ACTION marble::addbehavior(name group_name, name behavior_name, bool initial_sta
 
 ACTION marble::togglebhvr(name group_name, name behavior_name)
 {
-    
     //get group
     groups_table groups(get_self(), get_self().value);
     auto& grp = groups.get(group_name.value, "group not found");
