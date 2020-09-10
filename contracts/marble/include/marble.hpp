@@ -201,6 +201,10 @@ CONTRACT marble : public contract
     //auth: manager
     ACTION quickbuild(name frame_name, name to, map<name, string> override_tags, map<name, int64_t> override_attributes);
 
+    //cleans a frame from an item
+    //auth: manager
+    ACTION cleanframe(name frame_name, uint64_t serial);
+
     //remove a frame
     //auth: manager
     ACTION rmvframe(name frame_name, string memo);

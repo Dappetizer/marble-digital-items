@@ -372,6 +372,17 @@ icon: https://github.com/Telos-Foundation/images/raw/master/ricardian_assets/eos
 
 Build the {{frame_name}} frame to Item Serial #{{serial}} and apply overrides.
 
+<h1 class="contract">cleanframe</h1>
+
+---
+spec_version: "0.2.0"
+title: Clean Frame
+summary: 'Clean Frame'
+icon: https://github.com/Telos-Foundation/images/raw/master/ricardian_assets/eosio.contracts/icons/admin.png#9bf1cec664863bd6aaac0f814b235f8799fb02c850e9aa5da34e8a004bd6518e
+---
+
+Clean an item by removing frame properties;
+
 <h1 class="contract">rmvframe</h1>
 
 ---

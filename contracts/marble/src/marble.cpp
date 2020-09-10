@@ -1321,6 +1321,59 @@ ACTION marble::quickbuild(name frame_name, name to, map<name, string> override_t
     }
 }
 
+ACTION marble::cleanframe(name frame_name, uint64_t serial)
+{
+    //open frames table, get frame
+    frames_table frames(get_self(), get_self().value);
+    auto& frm = frames.get(frame_name.value, "frame not found");
+
+    //open groups table, get group
+    groups_table groups(get_self(), get_self().value);
+    auto& grp = groups.get(frm.group.value, "group not found");
+
+    //authenticate
+    require_auth(grp.manager);
+
+    //clean default tags
+    for (auto itr = frm.default_tags.begin(); itr != frm.default_tags.end(); itr++) {
+        //open tags table, find tag
+        tags_table tags(get_self(), serial);
+        auto tag_itr = tags.find(itr->first.value);
+
+        //if tag found
+        if (tag_itr != tags.end()) {
+            //delete tag
+            tags.erase(*tag_itr);
+        }
+    }
+
+    //clean default attributes
+    for (auto itr = frm.default_attributes.begin(); itr != frm.default_attributes.end(); itr++) {
+        //open attributes table, find attribute
+        attributes_table attributes(get_self(), serial);
+        auto attr_itr = attributes.find(itr->first.value);
+
+        //if attribute found
+        if (attr_itr == attributes.end()) {
+            //delete attribute
+            attributes.erase(*attr_itr);
+        }
+    }
+
+    //clean default events
+    // for (auto itr = frm.default_events.begin(); itr != frm.default_events.end(); itr++) {
+    //     //open events table, find event
+    //     events_table events(get_self(), serial);
+    //     auto event_itr = events.find(itr->first.value);
+
+    //     //if event found
+    //     if (event_itr == events.end()) {
+    //         //delete event
+    //         events.erase(*event_itr);
+    //     }
+    // }
+}
+
 ACTION marble::rmvframe(name frame_name, string memo)
 {
     //open frames table, get frame
@@ -1337,7 +1390,6 @@ ACTION marble::rmvframe(name frame_name, string memo)
     //erase frame
     frames.erase(frm);
 }
-
 
 //======================== wallet actions ========================
 
