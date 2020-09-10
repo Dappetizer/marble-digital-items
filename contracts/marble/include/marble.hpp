@@ -51,7 +51,7 @@ CONTRACT marble : public contract
 
     //assume RAM costs for a table row
     //auth: payer
-    //ACTION payram(name payer, name table_type, name key);
+    //ACTION payram(name payer, name table_name, name key);
 
     //======================== group actions ========================
 
@@ -318,10 +318,26 @@ CONTRACT marble : public contract
         string checksum;
         string algorithm;
         bool locked;
+
         uint64_t primary_key() const { return tag_name.value; }
+
         EOSLIB_SERIALIZE(tag, (tag_name)(content)(checksum)(algorithm)(locked))
     };
     typedef multi_index<"tags"_n, tag> tags_table;
+
+    //shared tags table
+    //scope: group
+    //ram payer: manager
+    // TABLE shared_tag {
+    //     name tag_name;
+    //     string content;
+    //     string checksum;
+    //     string algorithm;
+    //     bool locked;
+    //     uint64_t primary_key() const { return tag_name.value; }
+    //     EOSLIB_SERIALIZE(shared_tag, (tag_name)(content)(checksum)(algorithm)(locked))
+    // };
+    // typedef multi_index<name("sharedtags"), shared_tag> shared_tags_table;
 
     //attributes table
     //scope: serial
@@ -330,10 +346,24 @@ CONTRACT marble : public contract
         name attribute_name;
         int64_t points;
         bool locked;
+
         uint64_t primary_key() const { return attribute_name.value; }
+
         EOSLIB_SERIALIZE(attribute, (attribute_name)(points)(locked))
     };
     typedef multi_index<name("attributes"), attribute> attributes_table;
+
+    //shared attributes table
+    //scope: group
+    //ram payer: manager
+    // TABLE shared_attribute {
+    //     name attribute_name;
+    //     int64_t points;
+    //     bool locked;
+    //     uint64_t primary_key() const { return attribute_name.value; }
+    //     EOSLIB_SERIALIZE(shared_attribute, (attribute_name)(points)(locked))
+    // };
+    // typedef multi_index<name("sharedattrs"), shared_attribute> shared_attributes_table;
 
     //events table
     //scope: serial
@@ -346,6 +376,18 @@ CONTRACT marble : public contract
         EOSLIB_SERIALIZE(event, (event_name)(event_time)(locked))
     };
     typedef multi_index<name("events"), event> events_table;
+
+    //shared events table
+    //scope: group
+    //ram payer: manager
+    // TABLE shared_event {
+    //     name event_name;
+    //     time_point_sec event_time;
+    //     bool locked;
+    //     uint64_t primary_key() const { return event_name.value; }
+    //     EOSLIB_SERIALIZE(shared_event, (event_name)(event_time)(locked))
+    // };
+    // typedef multi_index<> shared_events_table;
 
     //frames table
     //scope: self
@@ -381,7 +423,7 @@ CONTRACT marble : public contract
     };
     typedef multi_index<name("bonds"), bond> bonds_table;
 
-    //walelts table
+    //wallets table
     //scope: owner
     //ram payer: owner
     TABLE wallet {
@@ -399,11 +441,12 @@ CONTRACT marble : public contract
     TABLE currency {
         asset deposits; //total deposited assets across wallets
         uint32_t wallets; //total unique wallets with balance
+        name account; //account where currency contract is deployed
         //asset bonded; //total assets tied up in bonds
 
         uint64_t primary_key() const { return deposits.symbol.code().raw(); }
 
-        EOSLIB_SERIALIZE(currency, (deposits)(wallets))
+        EOSLIB_SERIALIZE(currency, (deposits)(wallets)(account))
     };
     typedef multi_index<name("currencies"), currency> currencies_table;
 
