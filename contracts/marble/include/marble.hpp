@@ -30,6 +30,7 @@ CONTRACT marble : public contract
     const name MINT = name("mint");
     const name TRANSFER = name("transfer");
     const name ACTIVATE = name("activate");
+    const name RECLAIM = name("reclaim");
     const name CONSUME = name("consume");
     const name DESTROY = name("destroy");
     const name FREEZE = name("freeze");
