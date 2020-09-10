@@ -231,11 +231,11 @@ CONTRACT marble : public contract
     //auth: manager
     ACTION lockbond(uint64_t serial);
 
-    //======================== account actions ========================
+    //======================== wallet actions ========================
 
     //withdraw tokens from a wallet
-    //auth: account_owner
-    ACTION withdraw(name account_owner, asset amount);
+    //auth: wallet owner
+    ACTION withdraw(name wallet_owner, asset amount);
 
     //======================== notification handlers ========================
 
@@ -376,24 +376,30 @@ CONTRACT marble : public contract
     };
     typedef multi_index<name("bonds"), bond> bonds_table;
 
-    //accounts table //TODO: rename to wallets
-    //scope: account
-    TABLE account {
-        asset balance; //account balance amount
+    //walelts table
+    //scope: owner
+    //ram payer: owner
+    TABLE wallet {
+        asset balance; //wallet balance
 
         uint64_t primary_key() const { return balance.symbol.code().raw(); }
-        EOSLIB_SERIALIZE(account, (balance))
+
+        EOSLIB_SERIALIZE(wallet, (balance))
     };
-    typedef multi_index<name("accounts"), account> accounts_table;
+    typedef multi_index<name("wallets"), wallet> wallets_table;
 
     //currencies table
-    //scope: self //TODO?: contract_account
-    // TABLE currency {
-    //     asset deposits; //total deposited assets across wallets
-    //     uint32_t unique_wallets; //total unique wallets with balance
-    //     uint64_t primary_key() const { return deposits.symbol.code().raw(); }
-    //     EOSLIB_SERIALIZE(currency, (deposits)(wallets))
-    // };
-    // typedef multi_index<name("currencies"), currency> currencies_table;
+    //scope: self
+    //ram payer: contract
+    TABLE currency {
+        asset deposits; //total deposited assets across wallets
+        uint32_t wallets; //total unique wallets with balance
+        //asset bonded; //total assets tied up in bonds
+
+        uint64_t primary_key() const { return deposits.symbol.code().raw(); }
+
+        EOSLIB_SERIALIZE(currency, (deposits)(wallets))
+    };
+    typedef multi_index<name("currencies"), currency> currencies_table;
 
 };

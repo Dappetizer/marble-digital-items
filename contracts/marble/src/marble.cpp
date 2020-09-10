@@ -906,16 +906,16 @@ ACTION marble::newbond(uint64_t serial, asset amount, optional<name> release_eve
     //authenticate
     require_auth(grp.manager);
 
-    //open accounts table, get manager account
-    accounts_table accounts(get_self(), grp.manager.value);
-    auto& acct = accounts.get(amount.symbol.code().raw(), "manager account not found");
+    //open wallets table, get manager wallet
+    wallets_table wallets(get_self(), grp.manager.value);
+    auto& mgr_wall = wallets.get(amount.symbol.code().raw(), "manager wallet not found");
 
     //validate
-    check(acct.balance >= amount, "insufficient funds");
+    check(mgr_wall.balance >= amount, "insufficient funds");
     check(amount.amount > 0, "must back with a positive amount");
 
-    //subtract from account balance
-    accounts.modify(acct, same_payer, [&](auto& col) {
+    //subtract from wallet balance
+    wallets.modify(mgr_wall, same_payer, [&](auto& col) {
         col.balance -= amount;
     });
 
@@ -964,16 +964,16 @@ ACTION marble::addtobond(uint64_t serial, asset amount)
     //authenticate
     require_auth(grp.manager);
 
-    //open accounts table, get manager account
-    accounts_table accounts(get_self(), grp.manager.value);
-    auto& acct = accounts.get(amount.symbol.code().raw(), "manager account not found");
+    //open wallets table, get manager wallet
+    wallets_table wallets(get_self(), grp.manager.value);
+    auto& mgr_wall = wallets.get(amount.symbol.code().raw(), "manager wallet not found");
 
     //validate
-    check(acct.balance >= amount, "insufficient funds");
+    check(mgr_wall.balance >= amount, "insufficient funds");
     check(amount.amount > 0, "must back with a positive amount");
 
-    //subtract from account balance
-    accounts.modify(acct, same_payer, [&](auto& col) {
+    //subtract from wallet balance
+    wallets.modify(mgr_wall, same_payer, [&](auto& col) {
         col.balance -= amount;
     });
 
@@ -1016,20 +1016,20 @@ ACTION marble::release(uint64_t serial)
     //validate
     check(now >= evnt.event_time, "bond can only be released after release event time");
 
-    //open accounts table, search for account
-    accounts_table accounts(get_self(), itm.owner.value);
-    auto acct_itr = accounts.find(CORE_SYM.code().raw());
+    //open wallets table, search for wallet
+    wallets_table wallets(get_self(), itm.owner.value);
+    auto wall_itr = wallets.find(CORE_SYM.code().raw());
 
-    //if account found
-    if (acct_itr != accounts.end()) {
-        //add to existing account
-        accounts.modify(*acct_itr, same_payer, [&](auto& col) {
+    //if wallet found
+    if (wall_itr != wallets.end()) {
+        //add to existing wallet
+        wallets.modify(*wall_itr, same_payer, [&](auto& col) {
             col.balance += bnd.backed_amount;
         });
     } else {
-        //create new account
+        //create new wallet
         //ram payer: contract
-        accounts.emplace(get_self(), [&](auto& col) {
+        wallets.emplace(get_self(), [&](auto& col) {
             col.balance = bnd.backed_amount;
         });
     }
@@ -1048,20 +1048,20 @@ ACTION marble::releaseall(uint64_t serial, name release_to)
     bonds_table bonds(get_self(), serial);
     auto& bnd = bonds.get(CORE_SYM.code().raw(), "bond not found");
 
-    //open accounts table, search for account
-    accounts_table accounts(get_self(), release_to.value);
-    auto acct_itr = accounts.find(CORE_SYM.code().raw());
+    //open wallets table, search for wallet
+    wallets_table wallets(get_self(), release_to.value);
+    auto wall_itr = wallets.find(CORE_SYM.code().raw());
 
-    //if account found
-    if (acct_itr != accounts.end()) {
-        //add to existing account
-        accounts.modify(*acct_itr, same_payer, [&](auto& col) {
+    //if wallet found
+    if (wall_itr != wallets.end()) {
+        //add to existing wallet
+        wallets.modify(*wall_itr, same_payer, [&](auto& col) {
             col.balance += bnd.backed_amount;
         });
     } else {
-        //create new account
+        //create new wallet
         //ram payer: contract
-        accounts.emplace(get_self(), [&](auto& col) {
+        wallets.emplace(get_self(), [&](auto& col) {
             col.balance = bnd.backed_amount;
         });
     }
@@ -1094,77 +1094,6 @@ ACTION marble::lockbond(uint64_t serial)
     bonds.modify(bnd, same_payer, [&](auto& col) {
         col.locked = true;
     });
-}
-
-//======================== account actions ========================
-
-ACTION marble::withdraw(name account_owner, asset amount)
-{
-    //validate
-    check(amount.symbol == CORE_SYM, "can only withdraw core token");
-    
-    //authenticate
-    require_auth(account_owner);
-
-    //open accounts table, get deposit
-    accounts_table accounts(get_self(), account_owner.value);
-    auto& acct = accounts.get(amount.symbol.code().raw(), "account not found");
-
-    //validate
-    check(amount.amount > 0, "must withdraw a positive amount");
-    check(acct.balance >= amount, "insufficient funds");
-
-    //if withdrawing all tokens
-    if (acct.balance == amount) {
-        //erase account
-        accounts.erase(acct);
-    } else {
-        //update account balance
-        accounts.modify(acct, same_payer, [&](auto& col) {
-            col.balance -= amount;
-        });
-    }
-
-    //send inline eosio.token::transfer to withdrawing account
-    //auth: self
-    action(permission_level{get_self(), name("active")}, name("eosio.token"), name("transfer"), make_tuple(
-        get_self(), //from
-        account_owner, //to
-        amount, //quantity
-        std::string("Marble Account Withdrawal") //memo
-    )).send();
-}
-
-//======================== notification handlers ========================
-
-void marble::catch_transfer(name from, name to, asset quantity, string memo)
-{
-    //get initial receiver contract
-    name rec = get_first_receiver();
-
-    //if received notification from eosio.token, not from self, and symbol is CORE SYM
-    if (rec == name("eosio.token") && from != get_self() && quantity.symbol == CORE_SYM) {
-        //if memo is "deposit"
-        if (memo == std::string("deposit")) { 
-            //open accounts table, search for account
-            accounts_table accounts(get_self(), from.value);
-            auto acct_itr = accounts.find(CORE_SYM.code().raw());
-
-            //if account found
-            if (acct_itr != accounts.end()) {
-                //add to existing account
-                accounts.modify(*acct_itr, same_payer, [&](auto& col) {
-                    col.balance += quantity;
-                });
-            } else {
-                //create new account
-                //ram payer: contract
-                accounts.emplace(get_self(), [&](auto& col) {
-                    col.balance = quantity;
-                });
-            }
-        }
-    }
 }
 
 //======================== frame actions ========================
@@ -1407,4 +1336,76 @@ ACTION marble::rmvframe(name frame_name, string memo)
 
     //erase frame
     frames.erase(frm);
+}
+
+
+//======================== wallet actions ========================
+
+ACTION marble::withdraw(name wallet_owner, asset amount)
+{
+    //validate
+    check(amount.symbol == CORE_SYM, "can only withdraw core token");
+    
+    //authenticate
+    require_auth(wallet_owner);
+
+    //open wallets table, get deposit
+    wallets_table wallets(get_self(), wallet_owner.value);
+    auto& wall = wallets.get(amount.symbol.code().raw(), "wallet not found");
+
+    //validate
+    check(amount.amount > 0, "must withdraw a positive amount");
+    check(wall.balance >= amount, "insufficient funds");
+
+    //if withdrawing all tokens
+    if (wall.balance == amount) {
+        //erase wallet
+        wallets.erase(wall);
+    } else {
+        //update wallet balance
+        wallets.modify(wall, same_payer, [&](auto& col) {
+            col.balance -= amount;
+        });
+    }
+
+    //send inline eosio.token::transfer to withdrawing account
+    //auth: self
+    action(permission_level{get_self(), name("active")}, name("eosio.token"), name("transfer"), make_tuple(
+        get_self(), //from
+        wallet_owner, //to
+        amount, //quantity
+        std::string("Marble Wallet Withdrawal") //memo
+    )).send();
+}
+
+//======================== notification handlers ========================
+
+void marble::catch_transfer(name from, name to, asset quantity, string memo)
+{
+    //get initial receiver contract
+    name rec = get_first_receiver();
+
+    //if received notification from eosio.token, not from self, and symbol is CORE SYM
+    if (rec == name("eosio.token") && from != get_self() && quantity.symbol == CORE_SYM) {
+        //if memo is "deposit"
+        if (memo == std::string("deposit")) { 
+            //open wallets table, search for wallet
+            wallets_table wallets(get_self(), from.value);
+            auto wall_itr = wallets.find(CORE_SYM.code().raw());
+
+            //if wallet found
+            if (wall_itr != wallets.end()) {
+                //add to existing wallet
+                wallets.modify(*wall_itr, same_payer, [&](auto& col) {
+                    col.balance += quantity;
+                });
+            } else {
+                //create new wallet
+                //ram payer: contract
+                wallets.emplace(get_self(), [&](auto& col) {
+                    col.balance = quantity;
+                });
+            }
+        }
+    }
 }
