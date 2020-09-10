@@ -125,67 +125,67 @@ CONTRACT marble : public contract
 
     //assign a new tag to an item
     //auth: manager
-    ACTION newtag(uint64_t serial, name tag_name, string content, optional<string> checksum, optional<string> algorithm);
+    ACTION newtag(uint64_t serial, name tag_name, string content, optional<string> checksum, optional<string> algorithm, bool shared);
 
     //update tag content, checksum, and/or algorithm
     //auth: manager
-    ACTION updatetag(uint64_t serial, name tag_name, string new_content, optional<string> new_checksum, optional<string> new_algorithm);
+    ACTION updatetag(uint64_t serial, name tag_name, string new_content, optional<string> new_checksum, optional<string> new_algorithm, bool shared);
 
     //lock a tag to prevent mutations
     //auth: manager
-    ACTION locktag(uint64_t serial, name tag_name);
+    ACTION locktag(uint64_t serial, name tag_name, bool shared);
 
     //remove tag from item
     //auth: manager
-    ACTION rmvtag(uint64_t serial, name tag_name, string memo);
+    ACTION rmvtag(uint64_t serial, name tag_name, string memo, bool shared);
 
     //======================== attribute actions ========================
 
     //assign a new attribute to an item
     //auth: manager
-    ACTION newattribute(uint64_t serial, name attribute_name, int64_t initial_points);
+    ACTION newattribute(uint64_t serial, name attribute_name, int64_t initial_points, bool shared);
 
     //sets an attributes points
     //auth: manager
-    ACTION setpoints(uint64_t serial, name attribute_name, int64_t new_points);
+    ACTION setpoints(uint64_t serial, name attribute_name, int64_t new_points, bool shared);
 
     //increases attribute points by amount
     //auth: manager
-    ACTION increasepts(uint64_t serial, name attribute_name, uint64_t points_to_add);
+    ACTION increasepts(uint64_t serial, name attribute_name, uint64_t points_to_add, bool shared);
 
     //decreases attribute points by amount
     //auth: manager
-    ACTION decreasepts(uint64_t serial, name attribute_name, uint64_t points_to_subtract);
+    ACTION decreasepts(uint64_t serial, name attribute_name, uint64_t points_to_subtract, bool shared);
 
     //locks an attribute to prevent mutations
     //auth: manager
-    ACTION lockattr(uint64_t serial, name attribute_name);
+    ACTION lockattr(uint64_t serial, name attribute_name, bool shared);
 
     //removes an attribute from an item
     //auth: manager
-    ACTION rmvattribute(uint64_t serial, name attribute_name);
+    ACTION rmvattribute(uint64_t serial, name attribute_name, bool shared);
 
     //======================== event actions ========================
 
-    //log an event (will not save to events table)
-    //auth: self
-    ACTION logevent(name event_name, int64_t event_value, time_point_sec event_time, string memo);
-
     //create a new event (if no custom event time given use current time point)
     //auth: manager
-    ACTION newevent(uint64_t serial, name event_name, optional<time_point_sec> custom_event_time);
+    ACTION newevent(uint64_t serial, name event_name, optional<time_point_sec> custom_event_time, bool shared);
 
     //set a custom time on an event
     //auth: manager
-    ACTION seteventtime(uint64_t serial, name event_name, time_point_sec new_event_time);
+    ACTION seteventtime(uint64_t serial, name event_name, time_point_sec new_event_time, bool shared);
 
     //lock an event time to prevent mutations
     //auth: manager
-    ACTION lockevent(uint64_t serial, name event_name);
+    ACTION lockevent(uint64_t serial, name event_name, bool shared);
 
     //remove an event
     //auth: manager
-    ACTION rmvevent(uint64_t serial, name event_name);
+    ACTION rmvevent(uint64_t serial, name event_name, bool shared);
+
+    //log an event (will not save to events table)
+    //auth: self
+    ACTION logevent(name event_name, int64_t event_value, time_point_sec event_time, string memo, bool shared);
 
     //======================== frame actions ========================
 
@@ -258,6 +258,8 @@ CONTRACT marble : public contract
         name admin;
         uint64_t last_serial;
         //symbol core_sym;
+        //vector<name> installed;
+
         EOSLIB_SERIALIZE(config, (contract_name)(contract_version)(admin)(last_serial))
     };
     typedef singleton<name("config"), config> config_table;
@@ -273,7 +275,9 @@ CONTRACT marble : public contract
         uint64_t supply;
         uint64_t issued_supply;
         uint64_t supply_cap;
+
         uint64_t primary_key() const { return group_name.value; }
+
         EOSLIB_SERIALIZE(group, (title)(description)(group_name)(manager)
             (supply)(issued_supply)(supply_cap))
     };
@@ -286,7 +290,9 @@ CONTRACT marble : public contract
         name behavior_name;
         bool state;
         bool locked;
+
         uint64_t primary_key() const { return behavior_name.value; }
+
         EOSLIB_SERIALIZE(behavior, (behavior_name)(state)(locked))
     };
     typedef multi_index<name("behaviors"), behavior> behaviors_table;
@@ -299,9 +305,11 @@ CONTRACT marble : public contract
         name group;
         name owner;
         //uint64_t edition;
+
         uint64_t primary_key() const { return serial; }
         uint64_t by_group() const { return group.value; }
         uint64_t by_owner() const { return owner.value; }
+
         EOSLIB_SERIALIZE(item, (serial)(group)(owner))
     };
     typedef multi_index<name("items"), item,
@@ -328,16 +336,18 @@ CONTRACT marble : public contract
     //shared tags table
     //scope: group
     //ram payer: manager
-    // TABLE shared_tag {
-    //     name tag_name;
-    //     string content;
-    //     string checksum;
-    //     string algorithm;
-    //     bool locked;
-    //     uint64_t primary_key() const { return tag_name.value; }
-    //     EOSLIB_SERIALIZE(shared_tag, (tag_name)(content)(checksum)(algorithm)(locked))
-    // };
-    // typedef multi_index<name("sharedtags"), shared_tag> shared_tags_table;
+    TABLE shared_tag {
+        name tag_name;
+        string content;
+        string checksum;
+        string algorithm;
+        bool locked;
+
+        uint64_t primary_key() const { return tag_name.value; }
+
+        EOSLIB_SERIALIZE(shared_tag, (tag_name)(content)(checksum)(algorithm)(locked))
+    };
+    typedef multi_index<name("sharedtags"), shared_tag> shared_tags_table;
 
     //attributes table
     //scope: serial
@@ -356,14 +366,16 @@ CONTRACT marble : public contract
     //shared attributes table
     //scope: group
     //ram payer: manager
-    // TABLE shared_attribute {
-    //     name attribute_name;
-    //     int64_t points;
-    //     bool locked;
-    //     uint64_t primary_key() const { return attribute_name.value; }
-    //     EOSLIB_SERIALIZE(shared_attribute, (attribute_name)(points)(locked))
-    // };
-    // typedef multi_index<name("sharedattrs"), shared_attribute> shared_attributes_table;
+    TABLE shared_attribute {
+        name attribute_name;
+        int64_t points;
+        bool locked;
+
+        uint64_t primary_key() const { return attribute_name.value; }
+
+        EOSLIB_SERIALIZE(shared_attribute, (attribute_name)(points)(locked))
+    };
+    typedef multi_index<name("sharedattrs"), shared_attribute> shared_attributes_table;
 
     //events table
     //scope: serial
@@ -372,7 +384,9 @@ CONTRACT marble : public contract
         name event_name;
         time_point_sec event_time;
         bool locked;
+
         uint64_t primary_key() const { return event_name.value; }
+
         EOSLIB_SERIALIZE(event, (event_name)(event_time)(locked))
     };
     typedef multi_index<name("events"), event> events_table;
@@ -380,14 +394,16 @@ CONTRACT marble : public contract
     //shared events table
     //scope: group
     //ram payer: manager
-    // TABLE shared_event {
-    //     name event_name;
-    //     time_point_sec event_time;
-    //     bool locked;
-    //     uint64_t primary_key() const { return event_name.value; }
-    //     EOSLIB_SERIALIZE(shared_event, (event_name)(event_time)(locked))
-    // };
-    // typedef multi_index<> shared_events_table;
+    TABLE shared_event {
+        name event_name;
+        time_point_sec event_time;
+        bool locked;
+
+        uint64_t primary_key() const { return event_name.value; }
+
+        EOSLIB_SERIALIZE(shared_event, (event_name)(event_time)(locked))
+    };
+    typedef multi_index<name("sharedevents"), shared_event> shared_events_table;
 
     //frames table
     //scope: self
@@ -398,6 +414,7 @@ CONTRACT marble : public contract
         map<name, string> default_tags; //tag_name => default content
         map<name, int64_t> default_attributes; //attribute_name => default value
         // map<name, time_point_sec> default_events; //event_name => default value
+        // bool shared;
 
         uint64_t primary_key() const { return frame_name.value; }
         uint64_t by_group() const { return group.value; }
@@ -415,10 +432,12 @@ CONTRACT marble : public contract
         name release_event; //event name storing release time (blank for no release time)
         bool locked; //if true bond settings cannot be changed
 
+        // asset per_release; //amount released from bond per release event
         // uint16_t steps; //number of release steps before maturity
         // asset per_step; //amount released from bond per step
 
         uint64_t primary_key() const { return backed_amount.symbol.code().raw(); }
+
         EOSLIB_SERIALIZE(bond, (backed_amount)(release_event)(locked))
     };
     typedef multi_index<name("bonds"), bond> bonds_table;
