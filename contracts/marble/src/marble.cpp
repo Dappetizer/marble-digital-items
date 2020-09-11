@@ -635,15 +635,11 @@ ACTION marble::locktag(uint64_t serial, name tag_name, bool shared)
     }
 }
 
-ACTION marble::rmvtag(uint64_t serial, name tag_name, string memo, bool shared)
+ACTION marble::rmvtag(uint64_t serial, name group_name, name tag_name, string memo, bool shared)
 {
-    //open items table, get item
-    items_table items(get_self(), get_self().value);
-    auto& itm = items.get(serial, "item not found");
-
     //open groups table, get group
     groups_table groups(get_self(), get_self().value);
-    auto& grp = groups.get(itm.group.value, "group not found");
+    auto& grp = groups.get(group_name.value, "group not found");
 
     //authenticate
     require_auth(grp.manager);
@@ -885,15 +881,11 @@ ACTION marble::lockattr(uint64_t serial, name attribute_name, bool shared)
     }
 }
 
-ACTION marble::rmvattribute(uint64_t serial, name attribute_name, bool shared)
+ACTION marble::rmvattribute(uint64_t serial, name group_name, name attribute_name, bool shared)
 {
-    //open items table, get item
-    items_table items(get_self(), get_self().value);
-    auto& itm = items.get(serial, "item not found");
-
     //open groups table, get group
     groups_table groups(get_self(), get_self().value);
-    auto& grp = groups.get(itm.group.value, "group not found");
+    auto& grp = groups.get(group_name.value, "group not found");
 
     //authenticate
     require_auth(grp.manager);
@@ -1051,15 +1043,11 @@ ACTION marble::lockevent(uint64_t serial, name event_name, bool shared)
     }
 }
 
-ACTION marble::rmvevent(uint64_t serial, name event_name, bool shared)
+ACTION marble::rmvevent(uint64_t serial, name group_name, name event_name, bool shared)
 {
-    //open items table, get item
-    items_table items(get_self(), get_self().value);
-    auto& itm = items.get(serial, "item not found");
-
     //open groups table, get group
     groups_table groups(get_self(), get_self().value);
-    auto& grp = groups.get(itm.group.value, "group not found");
+    auto& grp = groups.get(group_name.value, "group not found");
 
     //authenticate
     require_auth(grp.manager);
