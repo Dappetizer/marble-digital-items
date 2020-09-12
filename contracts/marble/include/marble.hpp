@@ -137,7 +137,7 @@ CONTRACT marble : public contract
 
     //remove tag from item
     //auth: manager
-    ACTION rmvtag(uint64_t serial, name tag_name, string memo, bool shared);
+    ACTION rmvtag(uint64_t serial, name group_name, name tag_name, string memo, bool shared);
 
     //======================== attribute actions ========================
 
@@ -163,7 +163,7 @@ CONTRACT marble : public contract
 
     //removes an attribute from an item
     //auth: manager
-    ACTION rmvattribute(uint64_t serial, name attribute_name, bool shared);
+    ACTION rmvattribute(uint64_t serial, name group_name, name attribute_name, bool shared);
 
     //======================== event actions ========================
 
@@ -181,7 +181,7 @@ CONTRACT marble : public contract
 
     //remove an event
     //auth: manager
-    ACTION rmvevent(uint64_t serial, name event_name, bool shared);
+    ACTION rmvevent(uint64_t serial, name group_name, name event_name, bool shared);
 
     //log an event (will not save to events table)
     //auth: self
