@@ -5,6 +5,8 @@
 // contract: marble
 // version: v0.3.0
 
+#pragma once
+
 #include <eosio/eosio.hpp>
 #include <eosio/action.hpp>
 #include <eosio/singleton.hpp>
@@ -17,6 +19,7 @@ using namespace eosio;
 //TODO: create release perm, linkauth to releaseall() action
 //TODO: add core_symbol to config table
 //TODO?: add string payload_json to trigger
+//TODO?: signals
 
 CONTRACT marble : public contract
 {
