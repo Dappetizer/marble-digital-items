@@ -82,6 +82,8 @@ ACTION marble::rmvbehavior(name group_name, name behavior_name)
     behaviors_table behaviors(get_self(), group_name.value);
     auto& bhvr = behaviors.get(behavior_name.value, "behavior not found");
 
+    //TODO: prevent removal if locked?
+
     //erase behavior
     behaviors.erase(bhvr);
 }

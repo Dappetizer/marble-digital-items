@@ -89,6 +89,7 @@ ACTION marble::setmanager(name group_name, name new_manager, string memo)
     check(is_account(new_manager), "new manager account doesn't exist");
 
     //modify group
+    //TODO: change ram payer to new manager
     groups.modify(grp, same_payer, [&](auto& col) {
         col.manager = new_manager;
     });
