@@ -3,7 +3,7 @@
 // author: Craig Branscom
 // company: Dappetizer, LLC
 // contract: marble
-// version: v0.4.0
+// version: v1.3.0
 
 #pragma once
 
