@@ -48,6 +48,8 @@ describe("Marble Digital Items Tests", function () {
         // assert(confTable[0].last_serial == 0, "Incorrect Last Serial");
     });
 
+    //======================== config tests ========================
+
     it("Change Version", async () => {
         //initialize
         const newVersion = "2.0.0";
@@ -70,6 +72,8 @@ describe("Marble Digital Items Tests", function () {
         const confTable = await marbleContract.provider.select('config').from('mbl').find();
         assert(confTable[0].admin == adminAccount.name, "Incorrect Admin Account");
     });
+
+    //======================== group tests ========================
 
     it("Create New Group", async () => {
         //initialize
@@ -151,6 +155,8 @@ describe("Marble Digital Items Tests", function () {
         assert(groupsTable[0].manager == newManager, "Incorrect Group Manager");
     });
 
+    //======================== behavior tests ========================
+
     it("Add Behavior", async () => {
         //initialize
         const groupName = "heroes";
@@ -211,6 +217,8 @@ describe("Marble Digital Items Tests", function () {
         const behaviorsTable = await marbleContract.provider.select('behaviors').from('mbl').scope('heroes').equal(behaviorName).find();
         assert(behaviorsTable.length == 0, "Behavior Not Removed");
     });
+
+    //======================== item tests ========================
 
     it("Mint New Item", async () => {
         //initialize
@@ -361,6 +369,480 @@ describe("Marble Digital Items Tests", function () {
         assert(groupsTable[0].issued_supply == 2, "Incorrect Issued Supply");
     });
 
+    //======================== tag tests ========================
+
+    it("Create New Tag", async () => {
+        //initialize
+        const serial = 3;
+        const tagName = "image";
+        const tagContent = "https://i.imgur.com/kZypAmC.png";
+        const tagChecksum = "";
+        const tagAlgo = "";
+        const groupName = "heroes";
+
+        //call mintitem() on marble contract
+        await marbleContract.actions.mintitem([testAccount1.name, groupName], {from: testAccount2});
+
+        //call newtag() on marble contract
+        const res = await marbleContract.actions.newtag([serial, tagName, tagContent, null, null, 0], {from: testAccount2});
+        assert(res.processed.receipt.status == 'executed', "newtag() action was not executed");
+
+        //assert tags table values
+        const tagsTable = await marbleContract.provider.select('tags').from('mbl').scope(serial).equal(tagName).find();
+        assert(tagsTable[0].tag_name == tagName, "Incorrect Tag Name");
+        assert(tagsTable[0].content == tagContent, "Incorrect Tag Content");
+        assert(tagsTable[0].checksum == tagChecksum, "Incorrect Tag Checksum");
+        assert(tagsTable[0].algorithm == tagAlgo, "Incorrect Tag Algorithm");
+        assert(tagsTable[0].locked == false, "Incorrect Tag Locked State");
+    });
+
+    it("Update Tag", async () => {
+        //initialize
+        const serial = 3;
+        const tagName = "image";
+        const newTagContent = "https://i.imgur.com/kZypAmC-2.png";
+        const tagChecksum = "";
+        const tagAlgo = "";
+        const groupName = "heroes";
+
+        //call updatetag() on marble contract
+        const res = await marbleContract.actions.updatetag([serial, tagName, newTagContent, null, null, 0], {from: testAccount2});
+        assert(res.processed.receipt.status == 'executed', "updatetag() action was not executed");
+
+        //assert tags table values
+        const tagsTable = await marbleContract.provider.select('tags').from('mbl').scope(serial).equal(tagName).find();
+        assert(tagsTable[0].content == newTagContent, "Incorrect Tag Content");
+    });
+
+    it("Lock Tag", async () => {
+        //initialize
+        const serial = 3;
+        const tagName = "image";
+
+        //call locktag() on marble contract
+        const res = await marbleContract.actions.locktag([serial, tagName, 0], {from: testAccount2});
+        assert(res.processed.receipt.status == 'executed', "locktag() action was not executed");
+
+        //assert tags table values
+        const tagsTable = await marbleContract.provider.select('tags').from('mbl').scope(serial).equal(tagName).find();
+        assert(tagsTable[0].locked == true, "Incorrect Tag Locked State");
+    });
+
+    it("Remove Tag", async () => {
+        //initialize
+        const serial = 3;
+        const tagName = "image";
+        const groupName = "heroes";
+        const memo = "";
+
+        //call rmvtag() on marble contract
+        const res = await marbleContract.actions.rmvtag([serial, groupName, tagName, memo, 0], {from: testAccount2});
+        assert(res.processed.receipt.status == 'executed', "rmvtag() action was not executed");
+
+        //assert tags table values
+        const tagsTable = await marbleContract.provider.select('tags').from('mbl').scope(serial).find();
+        assert(tagsTable.length == 0, "Tag Not Removed");
+    });
+
+
+
+    it("Create New Shared Tag", async () => {
+        //initialize
+        const serial = 3;
+        const tagName = "defaultimg";
+        const tagContent = "https://i.imgur.com/kZypAmC.png";
+        const tagChecksum = "";
+        const tagAlgo = "";
+        const groupName = "heroes";
+
+        //call newtag() on marble contract
+        const res = await marbleContract.actions.newtag([serial, tagName, tagContent, null, null, 1], {from: testAccount2});
+        assert(res.processed.receipt.status == 'executed', "newtag() action was not executed");
+
+        //assert shared tags table values
+        const sharedTagsTable = await marbleContract.provider.select('sharedtags').from('mbl').scope(groupName).equal(tagName).find();
+        assert(sharedTagsTable[0].tag_name == tagName, "Incorrect Tag Name");
+        assert(sharedTagsTable[0].content == tagContent, "Incorrect Tag Content");
+        assert(sharedTagsTable[0].checksum == tagChecksum, "Incorrect Tag Checksum");
+        assert(sharedTagsTable[0].algorithm == tagAlgo, "Incorrect Tag Algorithm");
+        assert(sharedTagsTable[0].locked == false, "Incorrect Tag Locked State");
+    });
+
+    it("Update Shared Tag", async () => {
+        //initialize
+        const serial = 3;
+        const tagName = "defaultimg";
+        const newTagContent = "https://i.imgur.com/kZypAmC-2.png";
+        const tagChecksum = "";
+        const tagAlgo = "";
+        const groupName = "heroes";
+
+        //call updatetag() on marble contract
+        const res = await marbleContract.actions.updatetag([serial, tagName, newTagContent, null, null, 1], {from: testAccount2});
+        assert(res.processed.receipt.status == 'executed', "updatetag() action was not executed");
+
+        //assert shared tags table values
+        const sharedTagsTable = await marbleContract.provider.select('sharedtags').from('mbl').scope(groupName).equal(tagName).find();
+        assert(sharedTagsTable[0].content == newTagContent, "Incorrect Tag Content");
+    });
+
+    it("Lock Shared Tag", async () => {
+        //initialize
+        const serial = 3;
+        const tagName = "defaultimg";
+        const groupName = "heroes";
+
+        //call locktag() on marble contract
+        const res = await marbleContract.actions.locktag([serial, tagName, 1], {from: testAccount2});
+        assert(res.processed.receipt.status == 'executed', "locktag() action was not executed");
+
+        //assert shared tags table values
+        const sharedTagsTable = await marbleContract.provider.select('sharedtags').from('mbl').scope(groupName).equal(tagName).find();
+        assert(sharedTagsTable[0].locked == true, "Incorrect Tag Locked State");
+    });
+
+    it("Remove Shared Tag", async () => {
+        //initialize
+        const serial = 3;
+        const tagName = "defaultimg";
+        const groupName = "heroes";
+        const memo = "";
+
+        //call rmvtag() on marble contract
+        const res = await marbleContract.actions.rmvtag([serial, groupName, tagName, memo, 1], {from: testAccount2});
+        assert(res.processed.receipt.status == 'executed', "rmvtag() action was not executed");
+
+        //assert tags table values
+        const sharedTagsTable = await marbleContract.provider.select('tags').from('mbl').scope(groupName).equal(tagName).find();
+        assert(sharedTagsTable.length == 0, "Shared Tag Not Removed");
+    });
+
+    //======================== attribute tests ========================
     
-    
+    it("Create New Attribute", async () => {
+        //initialize
+        const serial = 3;
+        const attrName = "level";
+        const initialPoints = 1;
+
+        //call newattribute() on marble contract
+        const res = await marbleContract.actions.newattribute([serial, attrName, initialPoints, 0], {from: testAccount2});
+        assert(res.processed.receipt.status == 'executed', "newattribute() action was not executed");
+
+        //assert attributes table values
+        const attrsTable = await marbleContract.provider.select('attributes').from('mbl').scope(serial).equal(attrName).find();
+        assert(attrsTable[0].attribute_name == attrName, "Incorrect Attribute Name");
+        assert(attrsTable[0].points == initialPoints, "Incorrect Points");
+        assert(attrsTable[0].locked == false, "Incorrect Attribute Locked State");
+    });
+
+    it("Set Attribute Points", async () => {
+        //initialize
+        const serial = 3;
+        const attrName = "level";
+        const newPoints = 42;
+
+        //call setpoints() on marble contract
+        const res = await marbleContract.actions.setpoints([serial, attrName, newPoints, 0], {from: testAccount2});
+        assert(res.processed.receipt.status == 'executed', "setpoints() action was not executed");
+
+        //assert attributes table values
+        const attrsTable = await marbleContract.provider.select('attributes').from('mbl').scope(serial).equal(attrName).find();
+        assert(attrsTable[0].points == newPoints, "Incorrect Points");
+    });
+
+    it("Increase Attribute Points", async () => {
+        //initialize
+        const serial = 3;
+        const attrName = "level";
+        const increaseBy = 1;
+        const newPoints = 43;
+
+        //call increasepts() on marble contract
+        const res = await marbleContract.actions.increasepts([serial, attrName, increaseBy, 0], {from: testAccount2});
+        assert(res.processed.receipt.status == 'executed', "increasepts() action was not executed");
+
+        //assert attributes table values
+        const attrsTable = await marbleContract.provider.select('attributes').from('mbl').scope(serial).equal(attrName).find();
+        assert(attrsTable[0].points == newPoints, "Incorrect Points");
+    });
+
+    it("Decrease Attribute Points", async () => {
+        //initialize
+        const serial = 3;
+        const attrName = "level";
+        const decreaseBy = 1;
+        const newPoints = 42;
+
+        //call decreasepts() on marble contract
+        const res = await marbleContract.actions.decreasepts([serial, attrName, decreaseBy, 0], {from: testAccount2});
+        assert(res.processed.receipt.status == 'executed', "decreasepts() action was not executed");
+
+        //assert attributes table values
+        const attrsTable = await marbleContract.provider.select('attributes').from('mbl').scope(serial).equal(attrName).find();
+        assert(attrsTable[0].points == newPoints, "Incorrect Points");
+    });
+
+    it("Lock Attribute", async () => {
+        //initialize
+        const serial = 3;
+        const attrName = "level";
+
+        //call lockattr() on marble contract
+        const res = await marbleContract.actions.lockattr([serial, attrName, 0], {from: testAccount2});
+        assert(res.processed.receipt.status == 'executed', "lockattr() action was not executed");
+
+        //assert attributes table values
+        const attrsTable = await marbleContract.provider.select('attributes').from('mbl').scope(serial).equal(attrName).find();
+        assert(attrsTable[0].locked == true, "Incorrect Attribute Lock State");
+    });
+
+    it("Remove Attribute", async () => {
+        //initialize
+        const serial = 3;
+        const attrName = "level";
+        const groupName = "heroes";
+
+        //call rmvattribute() on marble contract
+        const res = await marbleContract.actions.rmvattribute([serial, groupName, attrName, 0], {from: testAccount2});
+        assert(res.processed.receipt.status == 'executed', "rmvattribute() action was not executed");
+
+        //assert attributes table values
+        const attrsTable = await marbleContract.provider.select('attributes').from('mbl').scope(serial).equal(attrName).find();
+        assert(attrsTable.length == 0, "Attribute Not Removed");
+    });
+
+
+
+    it("Create New Shared Attribute", async () => {
+        //initialize
+        const serial = 3;
+        const attrName = "maxplayers";
+        const initialPoints = 5;
+        const groupName = "heroes";
+
+        //call newattribute() on marble contract
+        const res = await marbleContract.actions.newattribute([serial, attrName, initialPoints, 1], {from: testAccount2});
+        assert(res.processed.receipt.status == 'executed', "newattribute() action was not executed");
+
+        //assert shared attributes table values
+        const sharedAttrsTable = await marbleContract.provider.select('sharedattrs').from('mbl').scope(groupName).equal(attrName).find();
+        assert(sharedAttrsTable[0].attribute_name == attrName, "Incorrect Attribute Name");
+        assert(sharedAttrsTable[0].points == initialPoints, "Incorrect Points");
+        assert(sharedAttrsTable[0].locked == false, "Incorrect Attribute Locked State");
+    });
+
+    it("Set Shared Attribute Points", async () => {
+        //initialize
+        const serial = 3;
+        const attrName = "maxplayers";
+        const newPoints = 55;
+        const groupName = "heroes";
+
+        //call setpoints() on marble contract
+        const res = await marbleContract.actions.setpoints([serial, attrName, newPoints, 1], {from: testAccount2});
+        assert(res.processed.receipt.status == 'executed', "setpoints() action was not executed");
+
+        //assert shared attributes table values
+        const sharedAttrsTable = await marbleContract.provider.select('sharedattrs').from('mbl').scope(groupName).equal(attrName).find();
+        assert(sharedAttrsTable[0].points == newPoints, "Incorrect Points");
+    });
+
+    it("Increase Shared Attribute Points", async () => {
+        //initialize
+        const serial = 3;
+        const attrName = "maxplayers";
+        const increaseBy = 4;
+        const newPoints = 59;
+        const groupName = "heroes";
+
+        //call increasepts() on marble contract
+        const res = await marbleContract.actions.increasepts([serial, attrName, increaseBy, 1], {from: testAccount2});
+        assert(res.processed.receipt.status == 'executed', "increasepts() action was not executed");
+
+        //assert shared attributes table values
+        const sharedAttrsTable = await marbleContract.provider.select('sharedattrs').from('mbl').scope(groupName).equal(attrName).find();
+        assert(sharedAttrsTable[0].points == newPoints, "Incorrect Points");
+    });
+
+    it("Decrease Shared Attribute Points", async () => {
+        //initialize
+        const serial = 3;
+        const attrName = "maxplayers";
+        const decreaseBy = 1;
+        const newPoints = 58;
+        const groupName = "heroes";
+
+        //call decreasepts() on marble contract
+        const res = await marbleContract.actions.decreasepts([serial, attrName, decreaseBy, 1], {from: testAccount2});
+        assert(res.processed.receipt.status == 'executed', "decreasepts() action was not executed");
+
+        //assert shared attributes table values
+        const sharedAttrsTable = await marbleContract.provider.select('sharedattrs').from('mbl').scope(groupName).equal(attrName).find();
+        assert(sharedAttrsTable[0].points == newPoints, "Incorrect Points");
+    });
+
+    it("Lock Shared Attribute", async () => {
+        //initialize
+        const serial = 3;
+        const attrName = "maxplayers";
+        const groupName = "heroes";
+
+        //call lockattr() on marble contract
+        const res = await marbleContract.actions.lockattr([serial, attrName, 1], {from: testAccount2});
+        assert(res.processed.receipt.status == 'executed', "lockattr() action was not executed");
+
+        //assert shared attributes table values
+        const sharedAttrsTable = await marbleContract.provider.select('sharedattrs').from('mbl').scope(groupName).equal(attrName).find();
+        assert(sharedAttrsTable[0].locked == true, "Incorrect Atrribute Lock State");
+    });
+
+    it("Remove Shared Attribute", async () => {
+        //initialize
+        const serial = 3;
+        const attrName = "maxplayers";
+        const groupName = "heroes";
+
+        //call rmvattribute() on marble contract
+        const res = await marbleContract.actions.rmvattribute([serial, groupName, attrName, 1], {from: testAccount2});
+        assert(res.processed.receipt.status == 'executed', "rmvattribute() action was not executed");
+
+        //assert shared attributes table values
+        const sharedAttrsTable = await marbleContract.provider.select('sharedattrs').from('mbl').scope(groupName).equal(attrName).find();
+        assert(sharedAttrsTable.length == 0, "Shared Attribute Not Removed");
+    });
+
+    //======================== event tests ========================
+
+    it("Create New Event", async () => {
+        //initialize
+        const serial = 3;
+        const eventName = "tradetime";
+        const initialTime = "2020-11-29T01:06:53";
+
+        //call newevent() on marble contract
+        const res = await marbleContract.actions.newevent([serial, eventName, initialTime, 0], {from: testAccount2});
+        assert(res.processed.receipt.status == 'executed', "newevent() action was not executed");
+
+        //assert events table values
+        const eventsTable = await marbleContract.provider.select('events').from('mbl').scope(serial).equal(eventName).find();
+        assert(eventsTable[0].event_name == eventName, "Incorrect Event Name");
+        assert(eventsTable[0].event_time == initialTime, "Incorrect Event Time");
+        assert(eventsTable[0].locked == false, "Incorrect Event Locked State");
+    });
+
+    it("Set Event Time", async () => {
+        //initialize
+        const serial = 3;
+        const eventName = "tradetime";
+        const newTime = "2020-11-30T01:06:53";
+
+        //call seteventtime() on marble contract
+        const res = await marbleContract.actions.seteventtime([serial, eventName, newTime, 0], {from: testAccount2});
+        assert(res.processed.receipt.status == 'executed', "seteventtime() action was not executed");
+
+        //assert events table values
+        const eventsTable = await marbleContract.provider.select('events').from('mbl').scope(serial).equal(eventName).find();
+        assert(eventsTable[0].event_time == newTime, "Incorrect Event Time");
+    });
+
+    it("Lock Event", async () => {
+        //initialize
+        const serial = 3;
+        const eventName = "tradetime";
+
+        //call lockevent() on marble contract
+        const res = await marbleContract.actions.lockevent([serial, eventName, 0], {from: testAccount2});
+        assert(res.processed.receipt.status == 'executed', "lockevent() action was not executed");
+
+        //assert events table values
+        const eventsTable = await marbleContract.provider.select('events').from('mbl').scope(serial).equal(eventName).find();
+        assert(eventsTable[0].locked == true, "Incorrect Event Lock State");
+    });
+
+    it("Remove Event", async () => {
+        //initialize
+        const serial = 3;
+        const eventName = "tradetime";
+        const groupName = "heroes";
+
+        //call rmvevent() on marble contract
+        const res = await marbleContract.actions.rmvevent([serial, groupName, eventName, 0], {from: testAccount2});
+        assert(res.processed.receipt.status == 'executed', "rmvevent() action was not executed");
+
+        //assert events table values
+        const eventsTable = await marbleContract.provider.select('events').from('mbl').scope(serial).equal(eventName).find();
+        assert(eventsTable.length == 0, "Event Not Removed");
+    });
+
+
+
+    it("Create New Shared Event", async () => {
+        //initialize
+        const serial = 3;
+        const eventName = "seasonend";
+        const initialTime = "2020-12-30T01:06:53";
+        const groupName = "heroes";
+
+        //call newevent() on marble contract
+        const res = await marbleContract.actions.newevent([serial, eventName, initialTime, 1], {from: testAccount2});
+        assert(res.processed.receipt.status == 'executed', "newevent() action was not executed");
+
+        //assert shared events table values
+        const sharedEventsTable = await marbleContract.provider.select('sharedevents').from('mbl').scope(groupName).equal(eventName).find();
+        assert(sharedEventsTable[0].event_name == eventName, "Incorrect Event Name");
+        assert(sharedEventsTable[0].event_time == initialTime, "Incorrect Event Time");
+        assert(sharedEventsTable[0].locked == false, "Incorrect Event Locked State");
+    });
+
+    it("Set Shared Event Time", async () => {
+        //initialize
+        const serial = 3;
+        const eventName = "seasonend";
+        const newTime = "2020-12-30T01:06:53";
+        const groupName = "heroes";
+
+        //call seteventtime() on marble contract
+        const res = await marbleContract.actions.seteventtime([serial, eventName, newTime, 1], {from: testAccount2});
+        assert(res.processed.receipt.status == 'executed', "seteventtime() action was not executed");
+
+        //assert shared events table values
+        const sharedEventsTable = await marbleContract.provider.select('sharedevents').from('mbl').scope(groupName).equal(eventName).find();
+        assert(sharedEventsTable[0].event_time == newTime, "Incorrect Event Time");
+    });
+
+    it("Lock Shared Event", async () => {
+        //initialize
+        const serial = 3;
+        const eventName = "seasonend";
+        const groupName = "heroes";
+
+        //call lockevent() on marble contract
+        const res = await marbleContract.actions.lockevent([serial, eventName, 1], {from: testAccount2});
+        assert(res.processed.receipt.status == 'executed', "lockevent() action was not executed");
+
+        //assert shared events table values
+        const sharedEventsTable = await marbleContract.provider.select('sharedevents').from('mbl').scope(groupName).equal(eventName).find();
+        assert(sharedEventsTable[0].locked == true, "Incorrect Event Lock State");
+    });
+
+    it("Remove Shared Event", async () => {
+        //initialize
+        const serial = 3;
+        const eventName = "seasonend";
+        const groupName = "heroes";
+
+        //call rmvevent() on marble contract
+        const res = await marbleContract.actions.rmvevent([serial, groupName, eventName, 1], {from: testAccount2});
+        assert(res.processed.receipt.status == 'executed', "rmvevent() action was not executed");
+
+        //assert shared events table values
+        const sharedEventsTable = await marbleContract.provider.select('sharedevents').from('mbl').scope(groupName).equal(eventName).find();
+        assert(sharedEventsTable.length == 0, "Shared Event Not Removed");
+    });
+
+    // it("", async () => {
+
+    // });
+
 });
