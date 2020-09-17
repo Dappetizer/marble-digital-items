@@ -841,6 +841,151 @@ describe("Marble Digital Items Tests", function () {
         assert(sharedEventsTable.length == 0, "Shared Event Not Removed");
     });
 
+    //======================== frame tests ========================
+
+    it("Create New Frame", async () => {
+        //initialize
+        const frameName = "warrior";
+        const groupName = "heroes";
+
+        let defaultTags = [];
+        defaultTags.push( {key: "backstory", value: "blah blah blah"} );
+
+        let defaultAttrs = [];
+        defaultAttrs.push( {key: "strength", value: 5} );
+
+        //call newframe() on marble contract
+        const res = await marbleContract.actions.newframe([frameName, groupName, defaultTags, defaultAttrs], {from: testAccount2});
+        assert(res.processed.receipt.status == 'executed', "newframe() action was not executed");
+
+        //assert frames table values
+        const framesTable = await marbleContract.provider.select('frames').from('mbl').equal(frameName).find();
+        assert(framesTable[0].frame_name == frameName, "Incorrect Frame Name");
+        assert(framesTable[0].group == groupName, "Incorrect Group Name");
+
+        assert(framesTable[0].default_tags[0].key == "backstory", "Incorrect Default Tag Key");
+        assert(framesTable[0].default_tags[0].value == "blah blah blah", "Incorrect Default Tag Value");
+
+        assert(framesTable[0].default_attributes[0].key == 'strength', "Incorrect Default Attribute Key");
+        assert(framesTable[0].default_attributes[0].value == 5, "Incorrect Default Attribute Value");
+    });
+
+    it("Apply Frame to Item without Overwrite", async () => {
+        //initialize
+        const frameName = "warrior";
+        const groupName = "heroes";
+        const serial = 3;
+        const tagName = "backstory";
+        const tagContent = "blah blah blah";
+        const attrName = "strength";
+        const attrPoints = 5;
+
+        //call applyframe() on marble contract
+        const res = await marbleContract.actions.applyframe([frameName, serial, 0], {from: testAccount2});
+        assert(res.processed.receipt.status == 'executed', "applyframe() action was not executed");
+
+        //assert tags table values
+        const tagsTable = await marbleContract.provider.select('tags').from('mbl').scope(serial).equal(tagName).find();
+        assert(tagsTable[0].tag_name == tagName, "Incorrect Tag Name");
+        assert(tagsTable[0].content == tagContent, "Incorrect Tag Content");
+        assert(tagsTable[0].checksum == "", "Incorrect Tag Checksum");
+        assert(tagsTable[0].algorithm == "", "Incorrect Tag Algorithm");
+        assert(tagsTable[0].locked == false, "Incorrect Tag Locked State");
+
+        //assert attributes table values
+        const attrsTable = await marbleContract.provider.select('attributes').from('mbl').scope(serial).equal(attrName).find();
+        assert(attrsTable[0].attribute_name == attrName, "Incorrect Attribute Name");
+        assert(attrsTable[0].points == attrPoints, "Incorrect Points");
+        assert(attrsTable[0].locked == false, "Incorrect Attribute Locked State");
+    });
+
+    it("Apply Frame to Item with Overwrite", async () => {
+        // //initialize
+        // const frameName = "warrior";
+        // const groupName = "heroes";
+        // const serial = 3;
+        // const tagName = "backstory";
+        // const tagContent = "blah blah blah";
+        // const attrName = "strength";
+        // const attrPoints = 5;
+
+        // //call applyframe() on marble contract
+        // const res = await marbleContract.actions.applyframe([frameName, serial, 0], {from: testAccount2});
+        // assert(res.processed.receipt.status == 'executed', "applyframe() action was not executed");
+
+        // //assert tags table values
+        // const tagsTable = await marbleContract.provider.select('tags').from('mbl').scope(serial).equal(tagName).find();
+        // assert(tagsTable[0].tag_name == tagName, "Incorrect Tag Name");
+        // assert(tagsTable[0].content == tagContent, "Incorrect Tag Content");
+        // assert(tagsTable[0].checksum == "", "Incorrect Tag Checksum");
+        // assert(tagsTable[0].algorithm == "", "Incorrect Tag Algorithm");
+        // assert(tagsTable[0].locked == false, "Incorrect Tag Locked State");
+
+        // //assert attributes table values
+        // const attrsTable = await marbleContract.provider.select('attributes').from('mbl').scope(serial).equal(attrName).find();
+        // assert(attrsTable[0].attribute_name == attrName, "Incorrect Attribute Name");
+        // assert(attrsTable[0].points == attrPoints, "Incorrect Points");
+        // assert(attrsTable[0].locked == false, "Incorrect Attribute Locked State");
+    });
+
+    it("Quick Build Item from Frame without Override", async () => {
+        //initialize
+        const frameName = "warrior";
+        const toAccount = testAccount1.name;
+        const groupName = "heroes";
+        const serial = 3;
+        const tagName = "backstory";
+        const tagContent = "blah blah blah";
+        const attrName = "strength";
+        const attrPoints = 5;
+
+        let overrideTags = [];
+        overrideTags.push( {key: "backstory", value: "blah blah blah"} );
+
+        let overrideAttrs = [];
+        overrideAttrs.push( {key: "strength", value: 5} );
+
+        //call quickbuild() on marble contract
+        // const res = await marbleContract.actions.quickbuild([frameName, toAccount, 0], {from: testAccount2});
+        // assert(res.processed.receipt.status == 'executed', "quickbuild() action was not executed");
+
+
+    });
+
+    it("Quick Build Item from Frame with Override", async () => {
+        //initialize
+        const frameName = "warrior";
+        const toAccount = testAccount1.name;
+        const groupName = "heroes";
+        const serial = 3;
+        const tagName = "backstory";
+        const tagContent = "blah blah blah";
+        const attrName = "strength";
+        const attrPoints = 5;
+
+        let overrideTags = [];
+        overrideTags.push( {key: "backstory", value: "Warrior Backstory"} );
+
+        let overrideAttrs = [];
+        overrideAttrs.push( {key: "strength", value: 7} );
+
+        //call quickbuild() on marble contract
+        const res = await marbleContract.actions.quickbuild([frameName, toAccount, 0], {from: testAccount2});
+        assert(res.processed.receipt.status == 'executed', "quickbuild() action was not executed");
+
+        
+    });
+
+    it("Clean Frame from Item", async () => {
+
+    });
+
+    it("Remove Frame", async () => {
+
+    });
+
+    //======================== bond tests ========================
+
     // it("", async () => {
 
     // });
