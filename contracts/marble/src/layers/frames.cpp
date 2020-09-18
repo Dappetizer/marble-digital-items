@@ -256,7 +256,7 @@ ACTION marble::cleanframe(name frame_name, uint64_t serial)
         auto attr_itr = attributes.find(itr->first.value);
 
         //if attribute found
-        if (attr_itr == attributes.end()) {
+        if (attr_itr != attributes.end()) {
             //delete attribute
             attributes.erase(*attr_itr);
         }
