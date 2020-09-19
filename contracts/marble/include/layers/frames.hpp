@@ -1,3 +1,6 @@
+//layer name: Frames
+//required: tags, attributes
+
 //======================== frame actions ========================
 
 //set up a new frame

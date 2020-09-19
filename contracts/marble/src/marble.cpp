@@ -12,3 +12,4 @@
 #include "./layers/events.cpp"
 #include "./layers/frames.cpp"
 #include "./layers/bonds.cpp"
+#include "./layers/wallets.cpp"

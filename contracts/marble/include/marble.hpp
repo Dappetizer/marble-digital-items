@@ -50,5 +50,6 @@ CONTRACT marble : public contract
     #include <layers/events.hpp>
     #include <layers/frames.hpp>
     #include <layers/bonds.hpp>
+    #include <layers/wallets.hpp>
 
 };

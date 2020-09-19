@@ -1,3 +1,6 @@
+//layer name: Attributes
+//required: core
+
 //======================== attribute actions ========================
 
 //assign a new attribute to an item

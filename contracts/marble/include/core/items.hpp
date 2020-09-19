@@ -43,7 +43,7 @@ TABLE item {
     uint64_t serial;
     name group;
     name owner;
-    //uint64_t edition;
+    //uint64_t mint; //edition?
 
     uint64_t primary_key() const { return serial; }
     uint64_t by_group() const { return group.value; }
