@@ -1,3 +1,6 @@
+//layer name: behaviors
+//required: groups
+
 //======================== behavior actions ========================
 
 //add a behavior to a group

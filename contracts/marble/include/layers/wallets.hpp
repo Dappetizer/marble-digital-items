@@ -1,4 +1,4 @@
-//layer name: Wallets
+//layer name: wallets
 //required: core
 
 //======================== wallet actions ========================

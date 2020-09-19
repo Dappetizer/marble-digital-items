@@ -1,3 +1,6 @@
+//layer name: tags
+//required: groups, items
+
 //======================== tag actions ========================
 
 //assign a new tag to an item

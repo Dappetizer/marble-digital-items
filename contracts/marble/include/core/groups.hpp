@@ -1,3 +1,6 @@
+//layer name: groups
+//required: config
+
 //======================== group actions ========================
 
 //create a new item group

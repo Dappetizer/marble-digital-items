@@ -1,5 +1,5 @@
-//layer name: Frames
-//required: tags, attributes
+//layer name: frames
+//required: groups, items, tags, attributes
 
 //======================== frame actions ========================
 

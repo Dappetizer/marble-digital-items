@@ -1,3 +1,6 @@
+//layer name: items
+//required: config, groups, behaviors
+
 //======================== item actions ========================
 
 //mint a new item

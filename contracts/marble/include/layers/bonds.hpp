@@ -1,3 +1,6 @@
+//layer name: bonds
+//required: groups, items, events, wallets
+
 //======================== bond actions ========================
 
 //back an item with a fungible token (draws from manager wallet balance)

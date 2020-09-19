@@ -1,3 +1,6 @@
+//layer name: config
+//required: none
+
 //======================== config actions ========================
 
 //initialize the contract
@@ -26,8 +29,9 @@ TABLE config {
     string contract_version;
     name admin;
     uint64_t last_serial;
+    //uint64_t last_locker_id;
     //symbol core_sym;
-    //vector<name> installed;
+    //vector<name> installed; //name of layers installed on marble factory
 
     EOSLIB_SERIALIZE(config, (contract_name)(contract_version)(admin)(last_serial))
 };

@@ -1,5 +1,5 @@
-//layer name: Attributes
-//required: core
+//layer name: attributes
+//required: groups, items
 
 //======================== attribute actions ========================
 

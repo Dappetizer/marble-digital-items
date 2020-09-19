@@ -1,3 +1,6 @@
+//layer name: events
+//required: groups, items
+
 //======================== event actions ========================
 
 //create a new event (if no custom event time given use current time point)
