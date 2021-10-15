@@ -45,7 +45,7 @@ void marble::catch_transfer(name from, name to, asset quantity, string memo)
     name rec = get_first_receiver();
 
     //if received notification from eosio.token, not from self, and symbol is CORE SYM
-    if (rec == name("eosio.token") && from != get_self() && quantity.symbol == CORE_SYM) {
+    if (rec == name("eosio.token") && from != get_self() && to == get_self() && quantity.symbol == CORE_SYM) {
         //if memo is "deposit"
         if (memo == std::string("deposit")) { 
             //open wallets table, search for wallet
